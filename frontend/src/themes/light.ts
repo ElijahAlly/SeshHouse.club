@@ -48,7 +48,7 @@ export const defaultTheme = createTheme({
             '#1a1b1e',
         ],
     },
-    primaryColor: 'teal',
+    primaryColor: 'green',
     primaryShade: {
         light: 8,
         dark: 9,

@@ -37,7 +37,7 @@ export const darkTheme = createTheme({
             '#1a1b1e',
         ],
     },
-    primaryColor: 'teal',
+    primaryColor: 'green',
     primaryShade: {
         light: 9,
         dark: 8,
@@ -69,11 +69,14 @@ export const darkTheme = createTheme({
         xl: '20px',
     },
     defaultGradient: {
-        from: '#f5f5f5',
-        to: 'teal',
+        from: 'black',
+        to: 'green',
         deg: 45,
     },
     defaultRadius: 1,
 })
 
-export const darkThemeVars = themeToVars(darkTheme);
+export const defaultThemeVars = {
+    ...themeToVars(darkTheme),
+    radiusDefault: 9,
+}

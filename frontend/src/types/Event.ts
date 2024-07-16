@@ -11,7 +11,7 @@ export interface EventType {
     event_type: string;
     registration_deadline: string | null; // ISO string format
     registration_fee: number;
-    tags: string;
+    tags: string[];
     status: string;
     attendees_count: number;
     event_image: string;

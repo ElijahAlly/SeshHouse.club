@@ -1,12 +1,10 @@
-import Events from '@/components/Events';
-import { Stack } from '@mantine/core'
 import React from 'react';
 
 const AppPage: React.FC = async () => {
   return (
-    <Stack>
-      <Events />
-    </Stack>
+    <div className='w-full h-full p-3'>
+      Home Page
+    </div>
   )
 }
 

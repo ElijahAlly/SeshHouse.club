@@ -1,57 +1,58 @@
 import './globals.css'
-import '@mantine/core/styles.css'
-import '@mantine/notifications/styles.css'
-// import '@mantine/dropzone/styles.css'
-// import '@mantine/carousel/styles.css'
-// import '@mantine/spotlight/styles.css'
+import { Inter as FontSans } from "next/font/google"
 
-import { ColorSchemeScript } from '@mantine/core'
-import { Notifications } from '@mantine/notifications'
 import type { Metadata } from 'next'
 import { CookiesProvider } from 'next-client-cookies/server'
 import React from 'react'
 
 import DefaultLayout from '@/components/DefaultLayout'
-// import SpotlightController from '@/components/SpotlightController'
-// import { interFont } from '@/fonts/inter'
-// import { getSessionFromCookies } from '@/lib/crypt'
-import AppProviders from '@/providers/AppProviders'
-// import { AuthUser } from '@/types/Auth'
+import { getSessionFromCookies } from '@/lib/crypt'
+import { UserType } from '@/types/User'
+import { ThemeProvider } from '@/components/ui/theme-provider'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { cn } from "@/lib/utils"
+ 
+const fontSans = FontSans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+})
 
 export const metadata: Metadata = {
-  title: 'SeaTheMoss',
-  description: 'Shop High Quality Sea Moss Products',
+  title: 'SeshHouse',
+  description: 'Vibe @ the SeshHouse',
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // const user: AuthUser | null = await getSessionFromCookies()
+  const user: UserType | null = await getSessionFromCookies();
 
   return (
-    <html lang="en">
+    <html lang="en" className="min-h-screen min-w-screen scroll-smooth bg-warning-foreground" suppressHydrationWarning>
       <head>
-        <ColorSchemeScript />
+        <meta charSet='UTF-8' />
+        <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+        <link href='https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css' rel='stylesheet' />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        {/* <link rel="icon" type="image/png" sizes="32x32" href="/images/SeaTheMoss-Empty-Icon.png" /> */}
-        {/* <link
-          rel="icon"
-          type="image/svg"
-          sizes="16x16" 
-          href="/images/SeaTheMoss-Empty-Icon-30px.svg"
-        />
-      */}
-        {/* <link rel="icon" href="/images/SeaTheMoss-Empty-Icon.png" /> */}
-        {/* <link rel="manifest" href="/site.webmanifest" /> */}
       </head>
-      <body className='body'>
-        <CookiesProvider>
-          <AppProviders>
-            <DefaultLayout>
-              <Notifications />
-              {/* <SpotlightController /> */}
-              {children}
-            </DefaultLayout>
-          </AppProviders>
-        </CookiesProvider>
+      <body
+        className={cn(
+          "h-screen w-screen bg-background font-sans antialiased",
+          fontSans.variable
+        )}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+            <CookiesProvider>
+              <TooltipProvider>
+                <DefaultLayout user={user}>
+                  {children}
+                </DefaultLayout>
+              </TooltipProvider>
+            </CookiesProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

@@ -4,21 +4,20 @@ export interface UserType {
     last_name: string;
     username: string;
     email: string;
-    phone_number: string;
-    password_hash: string;
-    profile_picture: string;
-    bio: string;
-    date_of_birth: string | null; // ISO string format
-    address: string;
-    country: string;
-    city: string;
-    state: string;
-    twitter_profile: string;
-    facebook_profile: string;
-    instagram_profile: string;
-    snapchat_profile: string;
-    youtube_profile: string;
-    twitch_profile: string;
+    phone_number: string | null;
+    profile_picture: string | null;
+    bio: string | null;
+    date_of_birth: string; // ISO string format
+    address: string | null;
+    country: string | null;
+    city: string | null;
+    state: string | null;
+    twitter_profile: string | null;
+    facebook_profile: string | null;
+    instagram_profile: string | null;
+    snapchat_profile: string | null;
+    youtube_profile: string | null;
+    twitch_profile: string | null;
     created_at: string; // ISO string format
     updated_at: string; // ISO string format
 }
