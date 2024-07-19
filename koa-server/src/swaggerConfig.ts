@@ -29,8 +29,13 @@ const options = {
         ],
             servers: [
             {
-                url: 'http://localhost:7654', 
+                url: process.env.DEV_SERVER_URL, 
+                description: 'Development server'
             },
+            {
+                url: process.env.PROD_SERVER_URL,
+                description: 'Production server'
+            }
         ],
         paths: {
             '/api/ping': {
