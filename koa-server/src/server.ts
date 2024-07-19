@@ -14,7 +14,6 @@ import swaggerRouter from './routes/swagger';
 
 const app = new Koa();
 
-// Serve static files from swagger-ui-dist
 app.use(serve(path.join(__dirname, '../node_modules/swagger-ui-dist')));
 
 app.keys = [process.env.SESSION_SECRET || 'session-secret-you-WILL-NEVER_guess:)'];
