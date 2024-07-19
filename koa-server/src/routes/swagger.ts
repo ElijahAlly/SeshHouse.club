@@ -10,7 +10,7 @@ router.get('/swagger.json', async (ctx) => {
 });
 
 // Serve Swagger UI HTML
-router.get('/docs', async (ctx) => {
+router.get('/', async (ctx) => {
   ctx.type = 'html';
   ctx.body = `
     <!DOCTYPE html>
