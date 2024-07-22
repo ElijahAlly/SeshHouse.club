@@ -3,7 +3,6 @@
 import axios from "axios"
 import React from "react"
 import { Button } from "../ui/button"
-import { NavigationMenuLink } from "../ui/navigation-menu"
 
 const LogoutButton: React.FC = () => {
   const handleLogout = async () => {
@@ -15,17 +14,20 @@ const LogoutButton: React.FC = () => {
           'Content-Type': 'application/json',
         },
       })
+      window.location.replace('/')
     } catch (err) {
       console.log(err)
     }
   }
 
   return (
-    <NavigationMenuLink
-      className="bg-red-600"
-      href="/" 
+    <Button
+      className="w-fit h-fit max-h-9 rounded-sm"
+      variant={'destructive'}
       onClick={handleLogout}
-    >Logout</NavigationMenuLink>
+    >
+      Logout
+    </Button>
   )
 }
 

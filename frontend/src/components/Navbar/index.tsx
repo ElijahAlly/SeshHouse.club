@@ -1,52 +1,51 @@
-import { Flex, Group, useMantineColorScheme, useMantineTheme } from '@mantine/core'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 
 import { ROUTE_PATHS } from '@/util/routes'
-import NavLinkItem from '../NavLinkItem'
 import UserMenu from '../UserMenu'
-
-// import ColorSchemeToggler from '../ColorSchemeToggler'
-// import NavLinkItem from '../NavLinkItem'
-// import { navLink, navLinkContClosed, navLinkContOpened } from './NavBar.css'
-
+import { UserType } from '@/types/User'
+import { NavigationMenu, NavigationMenuLink } from '../ui/navigation-menu'
+import Link from 'next/link'
+import Image from 'next/image'
+// import { ToggleTheme } from '../ui/toggle-theme'
 
 export type NavBarProps = {
+    user: UserType | null
 }
 
-const NavBar: React.FC<NavBarProps> = ({  }) => {
-    const pathname = usePathname()
-    const { colors, defaultRadius } = useMantineTheme()
-    const { colorScheme } = useMantineColorScheme()
-    const isDarkTheme = colorScheme === 'dark'
+const NavBar: React.FC<NavBarProps> = ({ user }) => {
+    const pathname = usePathname();
 
     return (
-        <Flex
-            w="100%"
-            py={'1vh'}
-            px={'3vw'}
-            bg={isDarkTheme ? colors.dark[8] : '#f5f5f5'}
-            h={'8vh'}
-            justify={'space-between'}
-        >
-            <Group>
-                <NavLinkItem
-                    label="Home"
-                    title="Home"
-                    href={ROUTE_PATHS.HOME}
-                    active={pathname === '/'}
-                    style={{ borderRadius: defaultRadius }}
-                />
-                <NavLinkItem
-                    label="/Events"
-                    title="Events"
-                    href={ROUTE_PATHS.EVENTS.INDEX}
-                    active={pathname === '/events' || pathname.startsWith('/events')}
-                    style={{ borderRadius: defaultRadius }}
-                />
-            </Group>
-            <UserMenu />
-        </Flex>
+        <NavigationMenu className='flex w-full h-20 items-center p-4 border-b border-stone-950 dark:border-white bg-white dark:bg-slate-950'>
+            <div className="flex w-full h-full items-center">
+                <Link
+                    href={'/'}
+                    passHref
+                    className='mr-8'
+                >
+                    <Image src='/images/seshhouse-logo.jpg' alt='app logo' width={42} height={42} priority className='rounded-md'/>
+                </Link>
+            </div>
+            <NavigationMenuLink
+                title="Home"
+                href={ROUTE_PATHS.HOME}
+                active={pathname === '/'}
+                className={`mr-8 ${pathname === '/' ? 'text-green-500 hover:text-green-600' : 'text-slate-300 hover:text-green-500'}`}
+            >Home</NavigationMenuLink>
+            <NavigationMenuLink
+                title="Events"
+                href={ROUTE_PATHS.EVENTS.INDEX}
+                className={`mr-8 ${pathname.startsWith('/events') ? 'text-green-500 hover:text-green-600' : 'text-slate-300 hover:text-green-500'}`}
+            >Events</NavigationMenuLink>
+            {/* <div className='mx-6'>
+                // TODO: Fix dark: not working
+                <ToggleTheme />
+            </div> */}
+            <div className='mr-6'>
+                <UserMenu user={user} pathname={pathname} />
+            </div>
+        </NavigationMenu>
     )
 }
 

@@ -15,7 +15,7 @@ const EventSingleBanner: React.FC<Props> = ({ event }) => {
     <div className='w-full min-h-[150px] px-16'>
       <Image
         src={event.event_image || getRandomPlaceholderImage()} 
-        alt={event.title}
+        alt={event.title || 'event image'}
         height={100}
         width={100}
       />

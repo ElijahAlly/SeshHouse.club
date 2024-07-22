@@ -13,6 +13,7 @@ import { z } from "zod"
 import { Button } from '../ui/button';
 import Image from 'next/image';
 import { ROUTE_PATHS } from '@/util/routes';
+import { UserType } from '@/types/User';
 
 const specialCharacters = '!@#$%&-_+=.'
 const numbers = '0123456789'
@@ -35,6 +36,9 @@ const signupFormSchema = z.object({
         message: "Username must be at least 2 characters.",
     }),
     email: z.string().email("Email must be valid"),
+    phone_number: z.string().regex(/^\+?[1-9]\d{1,14}$/, {
+        message: "Phone number must be a valid international phone number.",
+    }),
     password: z.string()
     .min(8, {
         message: "Password must be at least 8 characters.",
@@ -59,6 +63,7 @@ interface Props {
 }
 
 const AuthForm: React.FC<Props> = ({ page }) => {
+    console.log(page)
     const [section, setSection] = useState<'login' | 'signup'>(page ? page : 'login');
     const boxHeight = 60;
     const boxWidth = 60; // should be an even number
@@ -72,8 +77,8 @@ const AuthForm: React.FC<Props> = ({ page }) => {
             username: '',
             email: '',
             password: '',
-            date_of_birth: ''
-            // phoneNumber: ''
+            date_of_birth: '',
+            phone_number: ''
         },
     })
 
@@ -85,19 +90,24 @@ const AuthForm: React.FC<Props> = ({ page }) => {
         },
     })
 
+    const loginUserOnFrontend = async ({user, jwt }: { user: UserType, jwt: string }) => {
+        await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user, jwt }),
+        })
+        window.location.replace(ROUTE_PATHS.MY_PROFILE.INDEX);
+    }
+
     const handleSubmit = async (values: z.infer<typeof signupFormSchema>) => {
         try {
-            console.log(values)
-            // const signUpRes = await instance.post('/users/signup', signupForm);
-            // await fetch('/api/auth/login', {
-            //     method: 'POST',
-            //     headers: {
-            //         Accept: 'application/json',
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({ user: signUpRes.data.user, jwt: signUpRes.data.jwt }),
-            // })
-            // window.location.replace(ROUTE_PATHS.MY_PROFILE.INDEX);
+            // console.log(values)
+            const signUpRes = await instance.post('/user', signupForm);
+            // console.log('signUpRes', signUpRes);
+            loginUserOnFrontend(signUpRes.data)
         } catch (err: any) {
             console.error(err)
         }
@@ -106,16 +116,9 @@ const AuthForm: React.FC<Props> = ({ page }) => {
     const handleLogin = async (values: z.infer<typeof loginFormSchema>) => {
         try {
             console.log(values)
-            // const loginRes = await instance.post('/users/login', loginForm);
-            // await fetch('/api/auth/login', {
-            //     method: 'POST',
-            //     headers: {
-            //         Accept: 'application/json',
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({ user: loginRes.data.user, jwt: loginRes.data.jwt }),
-            // })
-            // window.location.replace(ROUTE_PATHS.MY_PROFILE.INDEX);
+            const loginRes = await instance.post('/login', loginForm);
+            console.log('loginRes', loginRes);
+            loginUserOnFrontend(loginRes.data);
         } catch (err: any) {
             console.error(err)
         }
@@ -137,7 +140,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                     <FormItem>
                                     <FormLabel>Username or Email</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="shadcn" {...field} />
+                                        <Input placeholder="Username or Email" {...field} />
                                     </FormControl>
                                     <FormDescription>Enter your username or email.</FormDescription>
                                     <FormMessage />
@@ -151,7 +154,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                     <FormItem>
                                     <FormLabel>Password</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="shadcn" {...field} />
+                                        <Input placeholder="Password" {...field} />
                                     </FormControl>
                                     <FormDescription>Enter your password.</FormDescription>
                                     <FormMessage />
@@ -183,7 +186,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                     <FormItem>
                                     <FormLabel>First Name</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="shadcn" {...field} />
+                                        <Input placeholder="First Name" {...field} />
                                     </FormControl>
                                     <FormDescription>Enter your first name.</FormDescription>
                                     <FormMessage />
@@ -197,7 +200,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                     <FormItem>
                                     <FormLabel>Last Name</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="shadcn" {...field} />
+                                        <Input placeholder="Last Name" {...field} />
                                     </FormControl>
                                     <FormDescription>Enter your last name.</FormDescription>
                                     <FormMessage />
@@ -211,7 +214,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                     <FormItem>
                                     <FormLabel>Username</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="shadcn" {...field} />
+                                        <Input placeholder="Username" {...field} />
                                     </FormControl>
                                     <FormDescription>Enter your username.</FormDescription>
                                     <FormMessage />
@@ -225,7 +228,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                     <FormItem>
                                     <FormLabel>Email</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="shadcn" {...field} />
+                                        <Input placeholder="Email" {...field} />
                                     </FormControl>
                                     <FormDescription>Enter email.</FormDescription>
                                     <FormMessage />
@@ -239,7 +242,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                     <FormItem>
                                     <FormLabel>Password</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="shadcn" {...field} />
+                                        <Input placeholder="Password" {...field} />
                                     </FormControl>
                                     <FormDescription>Enter password.</FormDescription>
                                     <FormMessage />
@@ -253,7 +256,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                     <FormItem>
                                     <FormLabel>Date of birth</FormLabel>
                                     <FormControl>
-                                        <Input type='date' placeholder="shadcn" {...field} />
+                                        <Input type='date' placeholder="Date of birth" {...field} />
                                     </FormControl>
                                     <FormDescription>Enter date of birth.</FormDescription>
                                     <FormMessage />

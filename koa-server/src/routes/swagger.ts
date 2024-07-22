@@ -3,6 +3,10 @@ import Router from "koa-router";
 
 const router = new Router();
 
+router.get('/', async (ctx) => {
+  ctx.redirect('/docs');
+});
+
 // Serve Swagger JSON
 router.get('/swagger.json', async (ctx) => {
   ctx.type = 'json';
@@ -19,6 +23,7 @@ router.get('/docs', async (ctx) => {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>API Documentation</title>
+      <link rel="icon" href="/favicon.ico" type="image/x-icon">
       <link rel="stylesheet" type="text/css" href="/swagger-ui.css">
       <style>
         html { box-sizing: border-box; }
@@ -40,8 +45,12 @@ router.get('/docs', async (ctx) => {
               SwaggerUIBundle.presets.apis,
               SwaggerUIStandalonePreset
             ],
+            plugins: [
+              SwaggerUIBundle.plugins.DownloadUrl
+            ],
             layout: 'StandaloneLayout'
           });
+          window.ui = ui;
         };
       </script>
     </body>

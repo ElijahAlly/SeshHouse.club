@@ -34,7 +34,7 @@ export const setSessionCookie = async (user: UserType) => {
         sameSite: 'strict',
         secure: process.env.NODE_ENV !== 'development',
         path: '/',
-        maxAge: 60 * 60 * 24 * 3, // expires in 3 days
+        maxAge: 60 * 60 * 24 * 7, // expires in 7 days
     })
 }
 
@@ -67,6 +67,7 @@ export const setCookie = async (cookie: string, name: 'jwt' | 'tp') => {
     if (!cookie || !name) return
     const expires = new Date(Date.now() + 60 * 60 * 24 * 1 * 1000) // expires in 1 day
     const encryptedCookie = await encryptCookie(cookie)
+    const days = name === 'tp' ? 1 : 7;
 
     cookieStore().set(name, encryptedCookie, {
         expires,
@@ -74,6 +75,6 @@ export const setCookie = async (cookie: string, name: 'jwt' | 'tp') => {
         sameSite: 'strict',
         secure: process.env.NODE_ENV !== 'development',
         path: '/',
-        maxAge: 60 * 60 * 24 * 1, // expires in 1 day
+        maxAge: 60 * 60 * 24 * days, // expires in 1 day or 7 days
     })
 }

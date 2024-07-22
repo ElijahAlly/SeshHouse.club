@@ -8,7 +8,7 @@ const LoginClientSide: React.FC = () => {
 
     return (
         <div className='flex justify-center mt-64'>
-            <AuthForm page={params.get('isSignup') ? 'signup' : 'login'}/>
+            <AuthForm page={params.get('signup') ? 'signup' : 'login'}/>
         </div>
     )
 }

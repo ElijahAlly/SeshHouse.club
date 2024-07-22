@@ -4,9 +4,12 @@ import client from '../db';
 import { User } from "../types/user";
 import bcrypt from 'bcrypt';
 import isAuthenticated from "../middlewares/isAuthenticated";
+import jwt from 'jsonwebtoken';
+import CONFIG from "../config";
 
 const router = new Router();
 
+// * Get All Users
 /**
  * @swagger
  * /api/users:
@@ -42,6 +45,7 @@ router.get('/api/users', async (ctx: Context) => {
     }
 });
 
+// * Get User by field
 /**
  * @swagger
  * /api/user:
@@ -168,6 +172,7 @@ router.get('/api/user', async (ctx: Context) => {
     }
 });
 
+// * Create New User
 /**
  * @swagger
  * /api/user:
@@ -327,8 +332,7 @@ router.get('/api/user', async (ctx: Context) => {
  *                 - message
  */
 router.post('/api/user', async (ctx) => {
-    const { first_name, last_name, username, email, phone_number } = ctx.request.body as Partial<User>; 
-    let { password } = ctx.request.body as Partial<User>;
+    const { first_name, last_name, username, email, phone_number, password } = ctx.request.body as Partial<User>; 
     if (!first_name || !last_name || !username || !email || !phone_number || !password) {
         ctx.status = 400;
         ctx.body = {
@@ -364,10 +368,13 @@ router.post('/api/user', async (ctx) => {
     }
 });
 
+// * Update User (id is required)
 /**
  * @swagger
  * /api/user:
  *   put:
+ *     security:
+ *       - BearerAuth: []
  *     summary: Update an existing user
  *     description: Updates user information based on provided fields. At least one field to update is required.
  *     requestBody:
@@ -455,6 +462,77 @@ router.post('/api/user', async (ctx) => {
  *                   type: string
  *                 message:
  *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: Unique identifier of the user
+ *                     first_name:
+ *                       type: string
+ *                       description: User's first name
+ *                     last_name:
+ *                       type: string
+ *                       description: User's last name
+ *                     username:
+ *                       type: string
+ *                       description: User's username
+ *                     email:
+ *                       type: string
+ *                       description: User's email address
+ *                     phone_number:
+ *                       type: string
+ *                       description: User's phone number
+ *                     password_hash:
+ *                       type: string
+ *                       description: User's hashed password
+ *                     profile_picture:
+ *                       type: string
+ *                       description: URL of the user's profile picture
+ *                     bio:
+ *                       type: string
+ *                       description: User's bio or description
+ *                     date_of_birth:
+ *                       type: string
+ *                       format: date
+ *                       description: User's date of birth
+ *                     street:
+ *                       type: string
+ *                       description: User's street address
+ *                     country:
+ *                       type: string
+ *                       description: User's country
+ *                     city:
+ *                       type: string
+ *                       description: User's city
+ *                     state:
+ *                       type: string
+ *                       description: User's state
+ *                     zipcode:
+ *                       type: string
+ *                       description: User's postal code
+ *                     twitter_profile:
+ *                       type: string
+ *                       description: User's Twitter profile URL
+ *                     facebook_profile:
+ *                       type: string
+ *                       description: User's Facebook profile URL
+ *                     instagram_profile:
+ *                       type: string
+ *                       description: User's Instagram profile URL
+ *                     snapchat_profile:
+ *                       type: string
+ *                       description: User's Snapchat profile URL
+ *                     twitch_profile:
+ *                       type: string
+ *                       description: User's Twitch profile URL
+ *                     youtube_profile:
+ *                       type: string
+ *                       description: User's YouTube profile URL
+ *                   required:
+ *                     - code
+ *                     - status
+ *                     - data
  *       400:
  *         description: Bad request. User ID is required or no fields provided for update.
  *       404:
@@ -462,7 +540,7 @@ router.post('/api/user', async (ctx) => {
  *       500:
  *         description: Internal Server Error
  */
-router.put('/api/user', async (ctx: Context) => {
+router.put('/api/user', isAuthenticated, async (ctx: Context) => {
     const userUpdates = ctx.request.body as Partial<User>;
     const { id, first_name, last_name, username, email, phone_number, password_hash, profile_picture, bio, date_of_birth, street, country, city, state, zipcode, twitter_profile, facebook_profile, instagram_profile, snapchat_profile, twitch_profile, youtube_profile } = userUpdates;
 
@@ -531,12 +609,14 @@ router.put('/api/user', async (ctx: Context) => {
             };
             return;
         }
+        const updatedUser = await client.query('SELECT * FROM users where id = ' + id);
 
         ctx.status = 200;
         ctx.body = {
             code: 200,
             status: 'success',
-            message: 'User updated successfully'
+            message: 'User updated successfully',
+            user: updatedUser.rows[0]
         };
     } catch (err) {
         console.error(err);
@@ -549,9 +629,10 @@ router.put('/api/user', async (ctx: Context) => {
     }
 });
 
+// * Delete User by id
 /**
  * @swagger
- * /api/user:
+ * /api/user/{id}:
  *   delete:
  *     security:
  *       - BearerAuth: []
@@ -585,7 +666,7 @@ router.put('/api/user', async (ctx: Context) => {
  *       500:
  *         description: Internal Server Error
  */
-router.delete('/api/user', isAuthenticated, async (ctx: Context) => {
+router.delete('/api/user/:id', isAuthenticated, async (ctx: Context) => {
     const queryParams = ctx.query;
     const { id } = queryParams as { id: string };
 
@@ -630,12 +711,13 @@ router.delete('/api/user', isAuthenticated, async (ctx: Context) => {
     }
 });
 
+// * Login User by email_or_username & password
 /**
  * @swagger
  * /api/login:
  *   post:
  *     summary: Log in a user
- *     description: Authenticates a user by their username or email and password. Sets a session on successful authentication.
+ *     description: Authenticates a user by their username or email and password. Sets a session on successful authentication and returns a JWT token.
  *     requestBody:
  *       required: true
  *       content:
@@ -649,9 +731,12 @@ router.delete('/api/user', isAuthenticated, async (ctx: Context) => {
  *               password:
  *                 type: string
  *                 description: Password of the user
+ *             required:
+ *               - username_or_email
+ *               - password
  *     responses:
  *       200:
- *         description: Login successful
+ *         description: 'Login successful'
  *         content:
  *           application/json:
  *             schema:
@@ -663,6 +748,9 @@ router.delete('/api/user', isAuthenticated, async (ctx: Context) => {
  *                   type: string
  *                 message:
  *                   type: string
+ *                 jwt:
+ *                   type: string
+ *                   description: 'JWT token for authenticated user'
  *                 user:
  *                   type: object
  *                   properties:
@@ -684,9 +772,6 @@ router.delete('/api/user', isAuthenticated, async (ctx: Context) => {
  *                     phone_number:
  *                       type: string
  *                       description: User's phone number
- *                     password_hash:
- *                       type: string
- *                       description: User's hashed password
  *                     profile_picture:
  *                       type: string
  *                       description: URL of the user's profile picture
@@ -695,7 +780,7 @@ router.delete('/api/user', isAuthenticated, async (ctx: Context) => {
  *                       description: User's bio or description
  *                     date_of_birth:
  *                       type: string
- *                       format: date
+ *                       format: 'date'
  *                       description: User's date of birth
  *                     street:
  *                       type: string
@@ -729,15 +814,75 @@ router.delete('/api/user', isAuthenticated, async (ctx: Context) => {
  *                       description: User's Twitch profile URL
  *                     youtube_profile:
  *                       type: string
- *                       description: User's YouTube profile_picture URL
+ *                       description: User's YouTube profile URL
  *       400:
  *         description: Bad request. Username/Email and Password are required.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                 status:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *               required:
+ *                 - code
+ *                 - status
+ *                 - message
  *       401:
- *         description: Unauthorized. Invalid password.
+ *         description: 'Unauthorized. Invalid password.'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                 status:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *               required:
+ *                 - 'code'
+ *                 - 'status'
+ *                 - 'message'
  *       404:
- *         description: Not Found. User not found.
+ *         description: 'Not Found. User not found.'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                 status:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *               required:
+ *                 - 'code'
+ *                 - 'status'
+ *                 - 'message'
  *       500:
- *         description: Internal Server Error
+ *         description: 'Internal Server Error'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                 status:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *               required:
+ *                 - 'code'
+ *                 - 'status'
+ *                 - 'message'
  */
 router.post('/api/login', async (ctx: Context) => {
     const { username_or_email, password } = ctx.request.body as { username_or_email: string, password: string };
@@ -753,11 +898,11 @@ router.post('/api/login', async (ctx: Context) => {
     }
 
     try {
-        const result = await client.query('SELECT * FROM users WHERE username = $1', [username_or_email]);
+        let result = await client.query('SELECT * FROM users WHERE username = $1', [username_or_email]);
         let user = result.rows[0];
-        
+
         if (!user) {
-            const result = await client.query('SELECT * FROM users WHERE email = $1', [username_or_email]);
+            result = await client.query('SELECT * FROM users WHERE email = $1', [username_or_email]);
             user = result.rows[0];
             if (!user) {
                 ctx.status = 404;
@@ -782,11 +927,16 @@ router.post('/api/login', async (ctx: Context) => {
         }
 
         ctx.session!.userId = user.id;
+
+        // Generate JWT token
+        const token = jwt.sign({ id: user.id }, CONFIG.JWT_SECRET, { expiresIn: '7d' });
+
         ctx.status = 200;
         ctx.body = {
             code: 200,
             status: 'success',
             message: 'Login successful',
+            jwt: token,
             user
         };
     } catch (err) {
@@ -800,10 +950,13 @@ router.post('/api/login', async (ctx: Context) => {
     }
 });
 
+// * Logout user
 /**
  * @swagger
  * /api/logout:
  *   post:
+ *     security:
+ *       - BearerAuth: []
  *     summary: Log out a user
  *     description: Logs out the current user by clearing the session.
  *     responses:
@@ -823,7 +976,7 @@ router.post('/api/login', async (ctx: Context) => {
  *       500:
  *         description: Internal Server Error
  */
-router.post('/api/logout', async (ctx: Context) => {
+router.post('/api/logout', isAuthenticated, async (ctx: Context) => {
     ctx.session = null;
     ctx.status = 200;
     ctx.body = {

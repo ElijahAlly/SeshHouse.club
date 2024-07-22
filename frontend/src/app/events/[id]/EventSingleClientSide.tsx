@@ -13,10 +13,8 @@ const EventSingleClientSide: React.FC = () => {
     useEffect(() => {
         const getEvent = async () => {
             try {
-                // console.log('api call for single event', decodeURI(pathname))
-                const res = await instance.get(decodeURI(pathname));
-                // console.log('event res', res);
-                setEvent(res.data);
+                const res = await instance.get(`/event?title=${pathname.split('/')[2]}`);
+                setEvent(res.data.data[0]);
             } catch (err) {
                 console.error('There was an error fetching the events!', err);
             }
@@ -27,7 +25,6 @@ const EventSingleClientSide: React.FC = () => {
 
     if (!event) return <p>No Events</p>
 
-    // console.log('event', event);
     return (
         <EventSingle event={event} />
     )

@@ -1,5 +1,5 @@
 export interface Event {
-    id: number;
+    id?: string;
     title: string;
     description: string;
     date: string; 
@@ -14,4 +14,6 @@ export interface Event {
     attendees_count?: number;
     thumbnail?: string;
     documents?: string; 
+    created_at?: string;
+    updated_at?: string;
 }

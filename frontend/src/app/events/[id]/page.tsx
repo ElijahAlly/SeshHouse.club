@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 }
 
 const EventsPage: React.FC = async () => {
-    return (
-        <EventSingleClientSide />
-    )
+  return (
+    <EventSingleClientSide />
+  )
 }
 
 export default EventsPage;

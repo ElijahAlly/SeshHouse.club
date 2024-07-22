@@ -13,7 +13,7 @@ const NavigationBreadcrumbs: FunctionComponent<NavigationBreadcrumbsProps> = () 
     }
 
     return (
-        <div className="flex w-full py-3 px-8">
+        <div className="h-4 flex w-full py-3 px-8 mt-4">
             {paths.map((path, index) => {
             // Construct the href for each breadcrumb link
             const href = '/' + paths.slice(0, index + 1).join('/');
@@ -23,10 +23,13 @@ const NavigationBreadcrumbs: FunctionComponent<NavigationBreadcrumbsProps> = () 
 
             return (
                 <span key={index} className="flex items-center">
-                <Link href={href} className={`mr-2 ${isLast ? 'font-bold' : ''}`}>
-                    {path}
-                </Link>
-                {!isLast && <span className="mr-2">{'>'}</span>}
+                    <Link href={href} className={`mr-2 ${isLast ? 'font-bold' : ''}`} style={{
+                        textDecoration: `0.84px solid ${isLast ? 'transparent' : 'gray'} underline`,
+                        textUnderlineOffset: '3px'
+                    }}>
+                        {path}
+                    </Link>
+                    {!isLast && <span className="mr-2">{'>'}</span>}
                 </span>
             );
             })}

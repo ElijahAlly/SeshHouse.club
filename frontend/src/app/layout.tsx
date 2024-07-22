@@ -26,7 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user: UserType | null = await getSessionFromCookies();
 
   return (
-    <html lang="en" className="min-h-screen min-w-screen scroll-smooth bg-warning-foreground" suppressHydrationWarning>
+    <html lang="en" className="min-h-screen min-w-screen scroll-smooth" suppressHydrationWarning>
       <head>
         <meta charSet='UTF-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1.0' />

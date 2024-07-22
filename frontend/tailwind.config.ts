@@ -1,13 +1,14 @@
 import type { Config } from "tailwindcss";
 import { fontFamily } from "tailwindcss/defaultTheme";
+import { withUt } from "uploadthing/tw";
 
 const config = {
-  darkMode: "class",
+  darkMode: "selector",
   content: [
     './pages/**/*.{html,css,ts,tsx}',
     './components/**/*.{html,css,ts,tsx}',
     './app/**/*.{html,css,ts,tsx}',
-    './src/**/*.{html,css,ts,tsx}',
+    './src/**/*.{html,css,ts,tsx,mdx}',
 	],
   prefix: "",
   theme: {
@@ -83,4 +84,4 @@ const config = {
   plugins: [require("tailwindcss-animate")],
 } satisfies Config
 
-export default config
+export default withUt(config)

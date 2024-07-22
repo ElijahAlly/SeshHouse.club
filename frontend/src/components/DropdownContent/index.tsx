@@ -17,19 +17,18 @@ const DropdownContent: FunctionComponent<DropdownContentProps> = () => {
     return ( 
         <DropdownMenuContent
             align='end' 
-            className={`${theme === 'dark' ? 'bg-black' : 'bg-white'}`}
             onClick={() => {
                 setMounted(false);
                 setTimeout(() => setMounted(true), 0);
             }}
         >
-            <DropdownMenuItem onClick={() => setTheme("light")}>
+            <DropdownMenuItem onClick={() => setTheme("light")} className="hover:bg-green-300 hover:text-black p-2 rounded-sm cursor-pointer">
                 Light
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("dark")}>
+            <DropdownMenuItem onClick={() => setTheme("dark")} className="hover:bg-green-300 hover:text-black p-2 rounded-sm cursor-pointer">
                 Dark
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("system")}>
+            <DropdownMenuItem onClick={() => setTheme("system")} className="hover:bg-green-300 hover:text-black p-2 rounded-sm cursor-pointer">
                 System
             </DropdownMenuItem>
         </DropdownMenuContent>

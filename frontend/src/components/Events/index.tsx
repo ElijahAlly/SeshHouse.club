@@ -13,7 +13,7 @@ const Events = () => {
             try {
                 const res = await axios.get('/events')
                 // console.log('events res', res);
-                setEvents(res.data);
+                setEvents(res.data.data);
             } catch (err) {
                 console.error('There was an error fetching the events!', err);
             }
@@ -21,8 +21,6 @@ const Events = () => {
 
         getEvents();
     }, []);
-
-    // console.log('events on EventsPage', events)
 
     return (
         <div className='relative flex flex-col items-center h-full w-full overflow-y-auto'>

@@ -7,7 +7,6 @@ interface Props {
 }
 
 const EventSingle: React.FC<Props> = ({ event }) => {
-  // console.log('event on single', event)
   return (
     <div
       className='flex flex-col h-[180px] max-h-[180px] w-full mb-16 p-12'
