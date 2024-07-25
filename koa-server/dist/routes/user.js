@@ -345,7 +345,7 @@ router.post('/api/user', async (ctx) => {
         return;
     }
     try {
-        const saltRounds = process.env.SALT_ROUNDS || 12;
+        const saltRounds = parseInt(process.env.SALT_ROUNDS || '12', 10);
         const password_hash = await bcrypt_1.default.hash(password, saltRounds);
         const result = await db_1.default.query('INSERT INTO users (first_name, last_name, username, email, phone_number, password_hash) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', [first_name, last_name, username, email, phone_number, password_hash]);
         ctx.status = 201;

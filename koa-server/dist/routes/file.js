@@ -6,14 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const koa_router_1 = __importDefault(require("koa-router"));
 const db_1 = __importDefault(require("../db"));
 const file_1 = require("../types/file");
-const isAuthenticated_1 = __importDefault(require("../middlewares/isAuthenticated"));
 const router = new koa_router_1.default();
 /**
  * @swagger
  * /api/file:
  *   post:
- *     security:
- *       - BearerAuth: []
  *     tags:
  *       - Files
  *     summary: Upload a file and save metadata
@@ -97,8 +94,9 @@ const router = new koa_router_1.default();
  *                 message:
  *                   type: string
  */
-router.post('/api/file', isAuthenticated_1.default, async (ctx) => {
+router.post('/api/file', async (ctx) => {
     const { user_id, file_url, uploaded_at, type } = ctx.request.body;
+    console.log({ user_id, file_url, uploaded_at, type });
     if (!file_url || !user_id || !uploaded_at || !type) {
         ctx.status = 400;
         ctx.body = {

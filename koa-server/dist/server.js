@@ -16,14 +16,15 @@ const event_1 = __importDefault(require("./routes/event"));
 const file_1 = __importDefault(require("./routes/file"));
 const swagger_1 = __importDefault(require("./routes/swagger"));
 const app = new koa_1.default();
-app.keys = [process.env.SESSION_SECRET || 'session-secret-you-WILL-NEVER_guess:)'];
-app.use((0, koa_session_1.default)({}, app));
+app.keys = [process.env.SESSION_SECRET || `session-secret-you-WILL-NEVER_guess:)-${(Math.random() * 1000).toFixed(0)}`];
 app.use((0, koa_bodyparser_1.default)());
 app.use((0, koa2_cors_1.default)({
-    origin: '*'
+    origin: 'http://localhost:4000',
+    credentials: true,
 }));
 app.use((0, koa_logger_1.default)());
 const PORT = config_1.default.port;
+app.use((0, koa_session_1.default)(config_1.default.SESSION_CONFIG, app));
 app.use(healthcheck_1.default.routes());
 app.use(user_1.default.routes()).use(user_1.default.allowedMethods());
 app.use(event_1.default.routes()).use(event_1.default.allowedMethods());

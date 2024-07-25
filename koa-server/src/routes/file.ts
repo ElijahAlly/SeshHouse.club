@@ -1,7 +1,6 @@
 import Router from "koa-router";
 import client from '../db';
 import { File, FileType } from "../types/file";
-import isAuthenticated from "../middlewares/isAuthenticated";
 import { User } from "../types/user";
 
 const router = new Router();

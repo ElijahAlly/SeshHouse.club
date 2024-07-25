@@ -14,17 +14,18 @@ import swaggerRouter from './routes/swagger';
 
 const app = new Koa();
 
-app.keys = [process.env.SESSION_SECRET || 'session-secret-you-WILL-NEVER_guess:)'];
-app.use(session({}, app));
+app.keys = [process.env.SESSION_SECRET || `session-secret-you-WILL-NEVER_guess:)-${(Math.random() * 1000).toFixed(0)}`];
 app.use(bodyParser());
 app.use(
     cors({
-        origin: '*'
+        origin: 'http://localhost:4000',
+        credentials: true,
     })
 );
 app.use(logger());
 
 const PORT = CONFIG.port;
+app.use(session(CONFIG.SESSION_CONFIG, app));
 
 app.use(healthcheckRouter.routes());
 app.use(userRouter.routes()).use(userRouter.allowedMethods());
