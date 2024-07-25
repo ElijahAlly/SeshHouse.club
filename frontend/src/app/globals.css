@@ -60,3 +60,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .required::after {
+    content: ' *';
+    color: #7f1d1d;
+  }
+
+  .optional::after {
+    content: ' (optional)';
+    color: lightgray;
+  }
+}

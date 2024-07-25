@@ -125,51 +125,53 @@ const MyProfileClientSide: FunctionComponent = () => {
     };
 
     return (
-        <div className='flex flex-col w-full p-20 pt-12'>
-            <div className='flex flex-col md:flex-row md:justify-between md:items-end'>
+        <div className='flex flex-col w-full p-20 pt-12 h-full overflow-y-scroll'>
+            <div className='flex flex-col md:flex-row md:justify-between md:items-end h-fit'>
                 <div className='flex flex-col items-center md:items-start'>
-                    <Avatar className='mb-4 h-40 w-40 border rounded-full'>
-                        <AvatarImage height={99} src={user?.profile_picture || ''} />
-                        <AvatarFallback>
-                            <Image
-                                src={'/images/user-icon-96-white.png'}
-                                height={99}
-                                width={99}
-                                alt="user profile icon/image"
-                                priority
+                    <div className='flex w-fit h-full'>
+                        <Avatar className='mb-4 h-40 w-40 border rounded-full'>
+                            <AvatarImage height={99} src={user?.profile_picture || ''} />
+                            <AvatarFallback>
+                                <Image
+                                    src={'/images/user-icon-96-white.png'}
+                                    height={99}
+                                    width={99}
+                                    alt="user profile icon/image"
+                                    priority
+                                />
+                            </AvatarFallback>
+                        </Avatar>
+                        {isEditing && (
+                            <UploadButton
+                                endpoint="profilePicture"
+                                onClientUploadComplete={async (res) => {
+                                    const user = {
+                                        ...res[0].serverData.user,
+                                        date_of_birth: formatDateYYYYMMDD(res[0].serverData.user.date_of_birth)
+                                    }
+                                    await resetUserOnFrontend(user);
+                                    handleCancelEditProfileButtonClick();
+                                    window.location.reload();
+                                }}
+                                onUploadError={(error: Error) => {
+                                    // Do something with the error.
+                                    console.error(error)
+                                }}
+                                className='m-4'
                             />
-                        </AvatarFallback>
-                    </Avatar>
-                    {isEditing && (
-                        <UploadButton
-                            endpoint="profilePicture"
-                            onClientUploadComplete={async (res) => {
-                                const user = {
-                                    ...res[0].serverData.user,
-                                    date_of_birth: formatDateYYYYMMDD(res[0].serverData.user.date_of_birth)
-                                }
-                                await resetUserOnFrontend(user);
-                                handleCancelEditProfileButtonClick();
-                                window.location.reload();
-                            }}
-                            onUploadError={(error: Error) => {
-                                // Do something with the error.
-                                console.error(error)
-                            }}
-                            className='my-4'
-                        />
-                    )}
+                        )}
+                    </div>
                     <h2 className='font-light text-lg text-center md:text-left'>{user?.username}</h2>
                 </div>
                 <div className='flex flex-col items-start md:items-center mt-4 md:mt-0 md:flex-row'>
                     {isEditing && (
-                    <Button 
-                        className='mb-2 md:mb-0 md:mr-4 text-yellow-500 border-yellow-500 hover:text-yellow-600 hover:border-yellow-600' 
-                        variant='outline'
-                        onClick={handleCancelEditProfileButtonClick}
-                    >
-                        Cancel Editing Your Profile
-                    </Button>
+                        <Button 
+                            className='mb-2 md:mb-0 md:mr-4 text-yellow-500 border-yellow-500 hover:text-yellow-600 hover:border-yellow-600' 
+                            variant='outline'
+                            onClick={handleCancelEditProfileButtonClick}
+                        >
+                            Cancel Editing Your Profile
+                        </Button>
                     )}
                     <Button
                         className={`mb-6 md:mb-0 md:mr-4 ${isEditing ? 'text-green-500 border-green-500 hover:text-green-600 hover:border-green-600' : 'hover:text-blue-500 hover:border-blue-500'}`}
@@ -181,10 +183,10 @@ const MyProfileClientSide: FunctionComponent = () => {
                     <LogoutButton />
                 </div>
             </div>
-            <div className='h-12'>
-                {saved && <span className="h-full align-text-bottom text-green-500 text-sm mt-1">Saved!</span>}
+            <div className='h-12 mt-3'>
+                {saved && <span className="h-full align-text-bottom bg-green-500 text-white text-sm rounded-md p-2">Saved!</span>}
             </div>
-            <div className='flex flex-col'>
+            <div className='relative flex flex-col h-full'>
                 <hr />
                 <h2 className='mt-4 text-xl font-semibold'>Required Info:</h2>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4 my-4'>

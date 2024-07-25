@@ -24,7 +24,14 @@ const NavBar: React.FC<NavBarProps> = ({ user }) => {
                     passHref
                     className='mr-8'
                 >
-                    <Image src='/images/seshhouse-logo.jpg' alt='app logo' width={42} height={42} priority className='rounded-md'/>
+                    <Image 
+                        className='rounded-md min-w-fit min-h-fit'
+                        src='/images/seshhouse-logo.jpg' 
+                        alt='app logo' 
+                        width={42} 
+                        height={42} 
+                        priority 
+                    />
                 </Link>
             </div>
             <NavigationMenuLink

@@ -26,7 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user: UserType | null = await getSessionFromCookies();
 
   return (
-    <html lang="en" className="min-h-screen min-w-screen scroll-smooth" suppressHydrationWarning>
+    <html lang="en" className="min-h-screen min-w-screen scroll-smooth overflow-hidden" suppressHydrationWarning>
       <head>
         <meta charSet='UTF-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1.0' />
@@ -35,7 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body
         className={cn(
-          "h-screen w-screen bg-background font-sans antialiased",
+          "h-screen w-screen bg-background font-sans antialiased overflow-hidden",
           fontSans.variable
         )}
       >

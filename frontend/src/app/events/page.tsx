@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 const EventsPage: React.FC = async () => {
   return (
-    <div className='w-full p-12 pt-24'>
+    <div className='w-full p-12 overflow-hidden'>
       <Events />
     </div>
   )

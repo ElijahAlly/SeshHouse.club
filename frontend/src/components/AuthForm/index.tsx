@@ -1,6 +1,5 @@
 'use client'
 
-// import useForm from '@/hooks/useForm';
 import { useEffect, useState } from 'react';
 import VanillaTilt from 'vanilla-tilt';
 import instance from '@/lib/axios';
@@ -14,6 +13,7 @@ import { Button } from '../ui/button';
 import Image from 'next/image';
 import { ROUTE_PATHS } from '@/util/routes';
 import { UserType } from '@/types/User';
+import Link from 'next/link';
 
 const specialCharacters = '!@#$%&-_+=.'
 const numbers = '0123456789'
@@ -21,8 +21,12 @@ const numbers = '0123456789'
 const today = new Date();
 
 const loginFormSchema = z.object({
-    username_or_email: z.string(),
-    password: z.string(),
+    username_or_email: z.string().min(2, {
+        message: "Username or email must be at least 2 characters.",
+    }),
+    password: z.string().min(2, {
+        message: "password must be at least 2 characters.",
+    }),
 })
 
 const signupFormSchema = z.object({
@@ -37,14 +41,14 @@ const signupFormSchema = z.object({
     }),
     email: z.string().email("Email must be valid"),
     phone_number: z.string().regex(/^\+?[1-9]\d{1,14}$/, {
-        message: "Phone number must be a valid international phone number.",
+        message: "Phone number must be a valid phone number.",
     }),
     password: z.string()
     .min(8, {
         message: "Password must be at least 8 characters.",
     })
     .refine((password) => password.includes(' '), { 
-        message: 'Password cannot include a space'
+        message: 'Password cannot include a space.'
     })
     .refine((password) => !password.split('').some((char: string) => specialCharacters.includes(char)), {
         message: 'Password must include at least 1 special character ' + specialCharacters
@@ -63,11 +67,36 @@ interface Props {
 }
 
 const AuthForm: React.FC<Props> = ({ page }) => {
-    console.log(page)
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordSrc, setShowPasswordSrc] = useState('/images/show-icon.png');
+    const [hidePasswordSrc, setHidePasswordSrc] = useState('/images/hide-icon.png');
+
+    const handleTogglePasswordView = () => {
+        if (showPassword) {
+            setShowPassword(prev => !prev);
+            setHidePasswordSrc('/images/show-icon.gif');
+            setTimeout(() => {
+                setHidePasswordSrc('/images/hide-icon.png');
+            }, 501);
+        } else {
+            setShowPassword(prev => !prev);
+            setShowPasswordSrc('/images/hide-icon.gif')
+            setTimeout(() => {
+                setShowPasswordSrc('/images/show-icon.png');
+            }, 501);
+        }
+    }
+
     const [section, setSection] = useState<'login' | 'signup'>(page ? page : 'login');
-    const boxHeight = 60;
-    const boxWidth = 60; // should be an even number
-    const halfBoxWidth = boxWidth / 2;
+
+    const handleToggleSection = () => {
+        if (section === 'login') {
+            setSection('signup');
+        } else {
+            setSection('login');
+        }
+        setShowPassword(false);
+    }
 
     const signupForm = useForm<z.infer<typeof signupFormSchema>>({
         resolver: zodResolver(signupFormSchema),
@@ -104,9 +133,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
 
     const handleSubmit = async (values: z.infer<typeof signupFormSchema>) => {
         try {
-            // console.log(values)
-            const signUpRes = await instance.post('/user', signupForm);
-            // console.log('signUpRes', signUpRes);
+            const signUpRes = await instance.post('/user', values);
             loginUserOnFrontend(signUpRes.data)
         } catch (err: any) {
             console.error(err)
@@ -115,8 +142,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
 
     const handleLogin = async (values: z.infer<typeof loginFormSchema>) => {
         try {
-            console.log(values)
-            const loginRes = await instance.post('/login', loginForm);
+            const loginRes = await instance.post('/login', values);
             console.log('loginRes', loginRes);
             loginUserOnFrontend(loginRes.data);
         } catch (err: any) {
@@ -124,26 +150,52 @@ const AuthForm: React.FC<Props> = ({ page }) => {
         }
     };
 
+    useEffect(() => {
+        if (section === 'login') {
+            const img = document.querySelector("#app-logo-login");
+            if (img && img instanceof HTMLImageElement) {
+                VanillaTilt.init(img, {
+                    max: 9,
+                    glare: false,
+                    perspective: 100,
+                    speed: 1500,
+                    scale: 1,
+                    axis: 'x'
+                });
+            };
+        } else {
+            const img = document.querySelector("#app-logo-signup");
+            if (img && img instanceof HTMLImageElement) {
+                VanillaTilt.init(img, {
+                    max: 9,
+                    glare: false,
+                    perspective: 100,
+                    speed: 1500,
+                    scale: 1,
+                    axis: 'x'
+                });
+            };
+        }
+    }, [section, setSection])
+
     const getLoginSection = () => {
         return (
-            <div
-                className={`bg-slate-400 min-h-[${boxHeight + 'vh'}] min-w-[${halfBoxWidth + 'vw'}] z-20`}
-            >
-                <div className='flex flex-col w-4/5 align-middle'>
-                    <h2>Login</h2>
+            <div className="bg-slate-400 h-full w-1/2 z-10 flex justify-center transition-transform duration-700">
+                <div className='flex flex-col w-4/5 items-center py-6'>
+                    <h2 className="text-2xl my-4">Login</h2>
+                    <Button onClick={handleToggleSection} variant='link'>or signup</Button>
                     <Form {...loginForm}>
-                        <form onSubmit={loginForm.handleSubmit(handleLogin)}>
+                        <form onSubmit={loginForm.handleSubmit(handleLogin)} className="w-full space-y-4">
                             <FormField
                                 control={loginForm.control}
                                 name="username_or_email"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Username or Email</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Username or Email" {...field} />
-                                    </FormControl>
-                                    <FormDescription>Enter your username or email.</FormDescription>
-                                    <FormMessage />
+                                        <FormLabel>Username or Email</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Enter your Username or Email" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />
@@ -152,44 +204,67 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Password</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Password" {...field} />
-                                    </FormControl>
-                                    <FormDescription>Enter your password.</FormDescription>
-                                    <FormMessage />
+                                        <FormLabel>Password</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <Input 
+                                                    placeholder="Create your Password" 
+                                                    type={showPassword ? 'text' : 'password'} 
+                                                    {...field} 
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleTogglePasswordView}
+                                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                                                >
+                                                    {showPassword ? (
+                                                        <Image src={showPasswordSrc} alt='show password icon' width={18} height={18} className='rounded-full' unoptimized/>
+                                                    ) : (
+                                                        <Image  src={hidePasswordSrc} alt='hide password icon'width={18} height={18} className='rounded-full' unoptimized/>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                            <Button variant='default' className='my-12'>Login</Button>
+                            <div className='flex justify-center w-full'>
+                                <Button
+                                    variant='default'
+                                    className={`my-4 w-4/5 ${!loginForm.formState.isValid ? 'cursor-not-allowed' : 'bg-green-500 hover:bg-green-700 cursor-pointer'}`}
+                                    disabled={!loginForm.formState.isValid || loginForm.formState.isSubmitting}
+                                >
+                                    Login
+                                </Button>
+                            </div>
                         </form>
                     </Form>
-                    <Button onClick={() => setSection('signup')} variant='link'>or signup</Button>
                 </div>
             </div>
         )
     };
 
+    // TODO: Fix signup form errors
+
     const getSignupSection = () => {
         return (
-            <div
-                className={`bg-slate-400 min-h-[${boxHeight + 'vh'}] min-w-[${halfBoxWidth + 'vw'}] ml-[${halfBoxWidth + 'vw'}] z-20`}
-            >
-                <div className='flex flex-col w-4/5 align-middle'>
-                    <h2>Signup</h2>
+            <div className="bg-slate-400 h-full w-1/2 z-10 flex justify-center transition-transform duration-700">
+                <div className='flex flex-col w-4/5 items-center py-6'>
+                    <h2 className="text-2xl my-4">Signup</h2>
+                    <Button onClick={handleToggleSection} variant='link'>or login</Button>
                     <Form {...signupForm}>
-                        <form onSubmit={signupForm.handleSubmit(handleSubmit)}>
+                        <form onSubmit={signupForm.handleSubmit(handleSubmit)} className="w-full space-y-4">
                             <FormField
                                 control={signupForm.control}
                                 name="first_name"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>First Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="First Name" {...field} />
-                                    </FormControl>
-                                    <FormDescription>Enter your first name.</FormDescription>
-                                    <FormMessage />
+                                        <FormLabel className='required'>First Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Enter your First Name" {...field} />
+                                        </FormControl>
+                                        <FormMessage className='text-red-500 text-sm'>{!signupForm.formState.isValid && signupForm.formState.errors.first_name?.message}</FormMessage>
                                     </FormItem>
                                 )}
                             />
@@ -198,12 +273,11 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                 name="last_name"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Last Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Last Name" {...field} />
-                                    </FormControl>
-                                    <FormDescription>Enter your last name.</FormDescription>
-                                    <FormMessage />
+                                        <FormLabel className='required'>Last Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Enter your Last Name" {...field} />
+                                        </FormControl>
+                                        <FormMessage className='text-red-500 text-sm'>{!signupForm.formState.isValid && signupForm.formState.errors.last_name?.message}</FormMessage>
                                     </FormItem>
                                 )}
                             />
@@ -212,12 +286,11 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                 name="username"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Username</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Username" {...field} />
-                                    </FormControl>
-                                    <FormDescription>Enter your username.</FormDescription>
-                                    <FormMessage />
+                                        <FormLabel className='required'>Username</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Enter your Username" {...field} />
+                                        </FormControl>
+                                        <FormMessage className='text-red-500 text-sm'>{!signupForm.formState.isValid && signupForm.formState.errors.username?.message}</FormMessage>
                                     </FormItem>
                                 )}
                             />
@@ -226,12 +299,24 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Email" {...field} />
-                                    </FormControl>
-                                    <FormDescription>Enter email.</FormDescription>
-                                    <FormMessage />
+                                        <FormLabel className='required'>Email</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Enter your Email" {...field} />
+                                        </FormControl>
+                                        <FormMessage className='text-red-500 text-sm'>{!signupForm.formState.isValid && signupForm.formState.errors.email?.message}</FormMessage>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={signupForm.control}
+                                name="phone_number"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className='optional'>Phone Number</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Enter your Phone Number" {...field} />
+                                        </FormControl>
+                                        <FormMessage className='text-red-500 text-sm'>{!signupForm.formState.isValid && signupForm.formState.errors.phone_number?.message}</FormMessage>
                                     </FormItem>
                                 )}
                             />
@@ -240,12 +325,44 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Password</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Password" {...field} />
-                                    </FormControl>
-                                    <FormDescription>Enter password.</FormDescription>
-                                    <FormMessage />
+                                        <FormLabel className='required'>Password</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <Input 
+                                                    placeholder="Create your Password" 
+                                                    type={showPassword ? 'text' : 'password'} 
+                                                    {...field} 
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleTogglePasswordView}
+                                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                                                >
+                                                    {showPassword ? (
+                                                        <Image src={showPasswordSrc} alt='show password icon' width={18} height={18} className='rounded-full' unoptimized/>
+                                                    ) : (
+                                                        <Image  src={hidePasswordSrc} alt='hide password icon'width={18} height={18} className='rounded-full' unoptimized/>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </FormControl>
+                                        <ul className="mt-2">
+                                            {/* {signupFormSchema.shape.password._def.schema.map((check: any, index: number) => (
+                                                <li
+                                                    key={index}
+                                                    className={`${
+                                                        signupForm.formState.errors.password && signupForm.formState.errors.password.message?.includes(check.message)
+                                                            ? 'text-red-500'
+                                                            : signupForm.formState.isSubmitted && !signupForm.formState.errors.password
+                                                            ? 'text-green-500'
+                                                            : 'text-gray-500'
+                                                    }`}
+                                                >
+                                                    {check.message}
+                                                </li>
+                                            ))} */}
+                                        </ul>
+                                        {/* <FormMessage className={'text-red-500 text-sm'}>{signupForm.formState.isValid && signupForm.formState.errors.password?.message}</FormMessage> */}
                                     </FormItem>
                                 )}
                             />
@@ -254,83 +371,87 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                 name="date_of_birth"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Date of birth</FormLabel>
-                                    <FormControl>
-                                        <Input type='date' placeholder="Date of birth" {...field} />
-                                    </FormControl>
-                                    <FormDescription>Enter date of birth.</FormDescription>
-                                    <FormMessage />
+                                        <FormLabel className='required'>Date of birth</FormLabel>
+                                        <FormControl>
+                                            <Input type='date' placeholder="Enter date of birth" {...field} />
+                                        </FormControl>
+                                        <FormMessage className='text-red-500 text-sm'>{!signupForm.formState.isValid && signupForm.formState.errors.date_of_birth?.message}</FormMessage>
                                     </FormItem>
                                 )}
                             />
-                        <Button variant='default' className='my-12'>Signup</Button>
+                            <div className='flex justify-center w-full'>
+                                <Button
+                                    variant='default'
+                                    className={`my-4 w-4/5 ${!signupForm.formState.isValid ? 'cursor-not-allowed' : 'bg-green-500 hover:bg-green-700 cursor-pointer'}`}
+                                    disabled={!signupForm.formState.isValid || signupForm.formState.isSubmitting}
+                                >
+                                    Signup
+                                </Button>
+                            </div>
                         </form>
                     </Form>
-                    <Button onClick={() => setSection('login')} variant='link'>or login</Button>
                 </div>
             </div>
         )
     };
 
-    useEffect(() => {
-        const img = document.querySelector("#app-logo");
-        if (img && img instanceof HTMLImageElement) {
-            VanillaTilt.init(img, {
-                max: 9,
-                glare: false,
-                perspective: 100,
-                speed: 1500,
-                scale: 1,
-                axis: 'x'
-            });
-        };
-    }, [section, setSection])
-
     return (
-        <div 
-            className={`relative overflow-x-hidden mt-16 w-[${boxWidth + 'vw'}]`}
-        >
-            {section === 'login' ? getLoginSection() : getSignupSection()}
+        <div className="relative flex overflow-hidden mt-16 w-4/5 h-fit rounded-md border">
+            {getLoginSection()}
+            {getSignupSection()}
             <div
-                className={`absolute top-0 right-0 overflow-x-hidden mt-16 min-w-[${halfBoxWidth + 'vw'}] min-h-[${boxHeight + 'vh'}]`}
-                style={{
-                    backgroundColor: 'green',
-                    transition: 'transform 0.81s ease-in-out', 
-                    zIndex: section === 'login' ? '3' : '1',
-                    transform: section === 'login' ? 'translateX(0)' : `translateX(-${halfBoxWidth}vw)` // slides out
-                    // transform: section === 'login' ? 'translateX(0)' : `translateX(${halfBoxWidth}vw)` // slides in
-
-                }}
+                className={`hidden md:block absolute top-0 right-0 overflow-hidden w-1/2 h-full z-50 bg-green-500 transition-transform duration-700 transform ${
+                    section === 'login' ? 'translate-x-0' : 'translate-x-full'
+                }`}
             >
-                <p>login details here...</p>
-            </div>
-            <div
-                className={`absolute top-0 left-0 overflow-x-hidden mt-16 min-w-[${halfBoxWidth + 'vw'}] min-h-[${boxHeight + 'vh'}]`} 
-                style={{
-                    backgroundColor: 'green',
-                    transition: 'transform 0.81s ease-in-out', 
-                    zIndex: section === 'signup' ? '3' : '1',
-                    transform: section === 'signup' ? `translateX(-${boxWidth + halfBoxWidth}vw)` : `translateX(-${boxWidth}vw)` // slides out
-                    // transform: section === 'signup' ? `translateX(-${boxWidth + halfBoxWidth}vw)` : `translateX(-${boxWidth * 2}vw)` // slides in
-                }}
-            >
-                <div className='flex flex-col align-middle justify-start h-full pt-20 px-24'>
-                    <h1>Welcome to SeshHouse</h1>
-                    <h3 className='mb-20'>Sign up and get tickets to events near you!</h3>
+                <div className='flex flex-col items-center justify-center h-fit overflow-clip p-6'>
+                    <h1 className='text-white text-3xl font-normal'>Welcome Back!</h1>
+                    <h3 className='text-white text-lg font-extralight'>Login to SeshHouse</h3>
                     <Image
-
-                        id='app-logo'
+                        id='app-logo-login'
                         src={'/images/seshhouse-logo.jpg'}
-                        height={60}
-                        width={60}
+                        height={90}
+                        width={90}
                         style={{ userSelect: 'none' }}
                         alt='app logo'
-                        className='priority'
+                        className='priority rounded-md mt-4'
+                        priority
+                    />
+                    <div className='flex flex-col mt-6 w-4/5'>
+                        <Link href={ROUTE_PATHS.EVENTS.INDEX} className='m-1 text-white hover:text-gray-200 hover:underline-offset-2'>
+                            Get your tickets to the next event
+                        </Link>
+                        <Link href={ROUTE_PATHS.CAFE_ITEM.INDEX} className='m-1 text-white hover:text-gray-200 hover:underline-offset-2'>
+                            Order your daily coffee from our Cafè
+                        </Link>
+                        <Link href={ROUTE_PATHS.HOME} className='m-1 text-white hover:text-gray-200 hover:underline-offset-2'>
+                            And so much more!
+                        </Link>
+                    </div>
+                </div>
+            </div>
+            <div
+                className={`hidden md:block absolute top-0 left-0 overflow-hidden w-1/2 h-full z-50 bg-green-500 transition-transform duration-700 transform ${
+                    section === 'signup' ? '-translate-x-0' : '-translate-x-full'
+                }`}
+            >
+                <div className='flex flex-col items-center justify-center h-fit overflow-clip p-6'>
+                    <h1 className='text-white text-3xl font-normal'>Welcome to SeshHouse</h1>
+                    <h3 className='mb-12 text-white text-lg font-extralight'>Sign up and get tickets to events near you!</h3>
+                    <Image
+                        id='app-logo-signup'
+                        src={'/images/seshhouse-logo.jpg'}
+                        height={150}
+                        width={150}
+                        style={{ userSelect: 'none' }}
+                        alt='app logo'
+                        className='priority rounded-md'
+                        priority
                     />
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
 export default AuthForm

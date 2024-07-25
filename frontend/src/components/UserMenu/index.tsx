@@ -30,11 +30,11 @@ const UserMenu: React.FC<Props> = ({ user, pathname }) => {
           </Avatar>
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent className="bg-white">
         {isUserloggedIn ? (
           <div className='flex flex-col p-1'>
             <DropdownMenuItem
-              className={`hover:bg-green-300 text-white hover:text-black p-2 rounded-sm cursor-pointer mb-2 ${pathname.startsWith('/my-profile') ? '' : 'bg-green-500 '}`} 
+              className={`hover:bg-green-300 text-black rounded-sm cursor-pointer mb-2 ${pathname.startsWith('/my-profile') ? '' : 'bg-green-500 '}`} 
               onClick={() => window.location.replace(ROUTE_PATHS.MY_PROFILE.INDEX)}
             >
               My profile
