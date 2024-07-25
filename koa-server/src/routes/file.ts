@@ -10,8 +10,6 @@ const router = new Router();
  * @swagger
  * /api/file:
  *   post:
- *     security:
- *       - BearerAuth: []
  *     tags:
  *       - Files
  *     summary: Upload a file and save metadata
@@ -95,9 +93,9 @@ const router = new Router();
  *                 message:
  *                   type: string
  */
-router.post('/api/file', isAuthenticated, async (ctx) => {
+router.post('/api/file', async (ctx) => {
     const { user_id, file_url, uploaded_at, type } = ctx.request.body as File;
-
+    console.log({ user_id, file_url, uploaded_at, type });
     if (!file_url || !user_id || !uploaded_at || !type) {
         ctx.status = 400;
         ctx.body = {

@@ -344,7 +344,7 @@ router.post('/api/user', async (ctx) => {
     }
 
     try {
-        const saltRounds = process.env.SALT_ROUNDS || 12;
+        const saltRounds = parseInt(process.env.SALT_ROUNDS || '12', 10);
         const password_hash = await bcrypt.hash(password, saltRounds);
 
         const result = await client.query(
