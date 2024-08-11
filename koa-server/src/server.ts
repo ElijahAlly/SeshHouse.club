@@ -5,8 +5,8 @@ import bodyParser from 'body-parser';
 
 import Koa from 'koa';
 import session from 'koa-session';
-import bodyParser from 'koa-bodyparser';
-import cors from '@koa/cors';
+// import bodyParser from 'koa-bodyparser';
+// import cors from '@koa/cors';
 import { koaSwagger } from 'koa2-swagger-ui';
 import logger from 'koa-logger';
 import CONFIG from './config';
