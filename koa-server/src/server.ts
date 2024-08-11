@@ -19,11 +19,7 @@ const app = new Koa();
 
 app.keys = [process.env.SESSION_SECRET || `session-secret-you-WILL-NEVER_guess:)-${(Math.random() * 1000).toFixed(0)}`];
 app.use(bodyParser());
-app.use(cors({
-    origin(ctx) {
-        return ctx.get('Origin') || '*';
-    },
-}));
+app.use(cors());
 app.use(logger());
 
 const PORT = CONFIG.port;
