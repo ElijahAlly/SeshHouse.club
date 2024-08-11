@@ -45,8 +45,8 @@ const options = {
         ],
         servers: [
             {
-                url: 'http://localhost:3000', 
-                description: 'Development server'
+                url: 'https://sesh-house-koa-server-production.up.railway.app', 
+                description: 'Production server'
             },
         ],
         paths: {
