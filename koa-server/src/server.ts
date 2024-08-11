@@ -2,7 +2,7 @@ require('dotenv').config();
 import Koa from 'koa';
 import session from 'koa-session';
 import bodyParser from 'koa-bodyparser';
-import cors from 'koa2-cors';
+import cors from '@koa/cors';
 import { koaSwagger } from 'koa2-swagger-ui';
 import logger from 'koa-logger';
 import CONFIG from './config';
@@ -19,25 +19,11 @@ const app = new Koa();
 
 app.keys = [process.env.SESSION_SECRET || `session-secret-you-WILL-NEVER_guess:)-${(Math.random() * 1000).toFixed(0)}`];
 app.use(bodyParser());
-
-const allowedOrigins = ['https://www.seshhouse.club', 'https://seshhouse.club'];
-app.use(async (ctx) => {
-    ctx.type = 'application/json';
-});
-app.use(
-    cors({
-        origin: (ctx: Koa.Context): string => {
-            const requestOrigin = ctx.headers.origin;
-            if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
-                return requestOrigin; // Allow the request origin if it's in the allowed list
-            }
-            return ''; // Block the request if the origin is not allowed
-        }, // dev http://localhost:4000 and rod https://www.seshhouse.club
-        credentials: true,
-        allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    })
-);
+app.use(cors({
+    origin(ctx) {
+        return ctx.get('Origin') || '*';
+    },
+}));
 app.use(logger());
 
 const PORT = CONFIG.port;
