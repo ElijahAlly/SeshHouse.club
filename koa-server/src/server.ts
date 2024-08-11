@@ -20,6 +20,9 @@ const app = new Koa();
 app.keys = [process.env.SESSION_SECRET || `session-secret-you-WILL-NEVER_guess:)-${(Math.random() * 1000).toFixed(0)}`];
 app.use(bodyParser());
 app.use(cors());
+app.use(async (ctx) => {
+    ctx.type = 'application/json';
+});
 app.use(logger());
 
 const PORT = CONFIG.port;

@@ -110,6 +110,8 @@ const router = new Router();
  *                   description: Error message
  */
 router.get('/api/events-to-book', async (ctx: Context) => {
+    ctx.type = 'application/json';
+
     try {
         const result = await client.query('SELECT * FROM events_to_book');
         ctx.status = 200;
@@ -199,6 +201,8 @@ router.get('/api/events-to-book', async (ctx: Context) => {
  *         description: Internal Server Error
  */
 router.get('/api/event-to-book', async (ctx: Context) => {
+    ctx.type = 'application/json';    
+
     const queryParams = ctx.query;
     const { id, title, tags, exact_match, type, rooms } = queryParams as Partial<BookEventType & { exact_match: 'true' | 'false' | undefined }>;
 

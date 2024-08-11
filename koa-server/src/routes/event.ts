@@ -184,6 +184,8 @@ router.get('/api/events', async (ctx: Context) => {
  *         description: Internal Server Error
  */
 router.get('/api/event', async (ctx: Context) => {
+    ctx.type = 'application/json';
+        
     const queryParams = ctx.query;
     const { id, title, tags, exact_match, organizer_id, status } = queryParams as Partial<Event & { 
         exact_match: 'true' | 'false' | undefined;
