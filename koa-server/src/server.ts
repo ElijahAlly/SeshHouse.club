@@ -20,9 +20,6 @@ const app = new Koa();
 app.keys = [process.env.SESSION_SECRET || `session-secret-you-WILL-NEVER_guess:)-${(Math.random() * 1000).toFixed(0)}`];
 app.use(bodyParser());
 app.use(cors());
-app.use(async (ctx) => {
-    ctx.type = 'application/json';
-});
 app.use(logger());
 
 const PORT = CONFIG.port;
@@ -34,7 +31,9 @@ app.use(eventRouter.routes()).use(eventRouter.allowedMethods());
 app.use(eventToBookRouter.routes()).use(eventToBookRouter.allowedMethods());
 app.use(fileRouter.routes()).use(fileRouter.allowedMethods());
 app.use(emailRouter.routes()).use(emailRouter.allowedMethods());
-
+app.use(async (ctx) => {
+    ctx.type = 'application/json';
+});
 // TODO: Add blogs route
 app.use(
     koaSwagger({
