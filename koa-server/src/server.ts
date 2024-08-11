@@ -19,9 +19,18 @@ const app = new Koa();
 
 app.keys = [process.env.SESSION_SECRET || `session-secret-you-WILL-NEVER_guess:)-${(Math.random() * 1000).toFixed(0)}`];
 app.use(bodyParser());
+
+const allowedOrigins = ['https://www.seshhouse.club', 'https://seshhouse.club'];
+
 app.use(
     cors({
-        origin: 'https://www.seshhouse.club', // dev http://localhost:4000 and rod https://www.seshhouse.club
+        origin: (ctx: Koa.Context): string => {
+            const requestOrigin = ctx.headers.origin;
+            if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+                return requestOrigin; // Allow the request origin if it's in the allowed list
+            }
+            return ''; // Block the request if the origin is not allowed
+        }, // dev http://localhost:4000 and rod https://www.seshhouse.club
         credentials: true,
     })
 );
