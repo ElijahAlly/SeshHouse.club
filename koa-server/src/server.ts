@@ -21,7 +21,7 @@ app.keys = [process.env.SESSION_SECRET || `session-secret-you-WILL-NEVER_guess:)
 app.use(bodyParser());
 app.use(
     cors({
-        origin: 'https://seshhouse.club', // dev http://localhost:4000 and rod https://seshhouse.club
+        origin: 'https://www.seshhouse.club', // dev http://localhost:4000 and rod https://www.seshhouse.club
         credentials: true,
     })
 );
@@ -40,7 +40,7 @@ app.use(emailRouter.routes()).use(emailRouter.allowedMethods());
 // TODO: Add blogs route
 app.use(
     koaSwagger({
-        routePrefix: '/docs',
+        routePrefix: '/',
         swaggerOptions: {
             url: '/swagger.json',
         },
