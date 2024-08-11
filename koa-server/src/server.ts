@@ -21,7 +21,7 @@ app.keys = [process.env.SESSION_SECRET || `session-secret-you-WILL-NEVER_guess:)
 app.use(bodyParser());
 app.use(
     cors({
-        origin: 'https://seshhouse.club', // dev http://localhost:4000 and rod https://www.seshhouse.club
+        origin: 'https://www.seshhouse.club', // dev http://localhost:4000 and rod https://www.seshhouse.club
         credentials: true,
     })
 );
