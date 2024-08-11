@@ -22,7 +22,7 @@ app.use(bodyParser());
 app.use(
     cors({
         origin: 'https://seshhouse.club', // dev http://localhost:4000 and rod https://www.seshhouse.club
-        credentials: false,
+        credentials: true,
     })
 );
 app.use(logger());
