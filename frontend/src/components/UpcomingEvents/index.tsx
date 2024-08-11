@@ -7,6 +7,7 @@ import { Button } from "../ui/button";
 import { Event } from "@/types/Event";
 import instance from "@/lib/axios";
 import { formatDescription } from "@/util/text";
+import Image from "next/image";
 
 interface UpcomingEventsProps {
 }
@@ -43,10 +44,12 @@ const UpcomingEvents: FunctionComponent<UpcomingEventsProps> = () => {
             <div className="flex flex-col md:grid md:grid-cols-3 md:gap-8">
                 {events.map((event, i) => (
                     <Card key={i} className='my-3'>
-                        <img
+                        <Image
                             src={event.thumbnail || '/images/seshhouse-logo.jpg'} 
                             alt="Event thumbnail" 
-                            className="w-full h-48 object-cover rounded-t-md" 
+                            className="w-full h-48 object-cover rounded-t-md"
+                            height={300}
+                            width={300}
                         />
                         <div className="p-4">
                             <h3 className="text-lg font-semibold mb-2">{event.title}</h3>

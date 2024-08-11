@@ -153,9 +153,9 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
         })
 
         if (filteredEventsByDateSelected.length > 0) {
-            setShowConflictingDatesWarning(true);
+            setShowConflictingDatesWarning && setShowConflictingDatesWarning(true);
         } else {
-            setShowConflictingDatesWarning(false);
+            setShowConflictingDatesWarning && setShowConflictingDatesWarning(false);
         }
 
         return filteredEventsByDateSelected;
