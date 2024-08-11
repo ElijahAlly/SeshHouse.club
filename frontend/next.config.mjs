@@ -5,8 +5,16 @@ const withVanillaExtract = createVanillaExtractPlugin()
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: [''],
+        domains: [
+            'sesh-house-koa-server-production.up.railway.app',
+            'external-content.duckduckgo.com',
+            'utfs.io'],
         remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'sesh-house-koa-server-production.up.railway.app',
+                pathname: '/**',
+            },
             {
                 protocol: 'https',
                 hostname: 'external-content.duckduckgo.com',
