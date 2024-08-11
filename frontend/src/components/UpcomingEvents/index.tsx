@@ -8,6 +8,7 @@ import { Event } from "@/types/Event";
 import instance from "@/lib/axios";
 import { formatDescription } from "@/util/text";
 import Image from "next/image";
+import axios from "axios";
 
 interface UpcomingEventsProps {
 }
@@ -21,6 +22,8 @@ const UpcomingEvents: FunctionComponent<UpcomingEventsProps> = () => {
 
     const getEvents = async () => {
         try {
+            const simpleRes = await axios.get('https://sesh-house-koa-server-production.up.railway.app/api/event');
+            console.log(simpleRes)
             const res = await instance.get('/event?status=APPROVED', {
                 headers: {
                     'Content-Type': 'application/json',
