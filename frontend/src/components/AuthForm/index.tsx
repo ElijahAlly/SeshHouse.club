@@ -168,7 +168,7 @@ const AuthForm: React.FC<Props> = ({ page, showSideCards, isOnEventCreationPage 
 
     const handleSubmit = async (values: z.infer<typeof signupFormSchema>) => {
         try {
-            const signUpRes = await instance.post('/user', {
+            const signUpRes = await instance('POST', '/user', {
                 ...values, 
                 date_of_birth: values.date_of_birth.toISOString().split('T')[0] 
             });
@@ -180,7 +180,7 @@ const AuthForm: React.FC<Props> = ({ page, showSideCards, isOnEventCreationPage 
 
     const handleLogin = async (values: z.infer<typeof loginFormSchema>) => {
         try {
-            const loginRes = await instance.post('/login', values);
+            const loginRes = await instance('POST', '/login', values);
             loginUserOnFrontend(loginRes.data);
         } catch (err: any) {
             console.error(err)

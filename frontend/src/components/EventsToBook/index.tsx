@@ -54,7 +54,7 @@ const EventsToBook: FunctionComponent<EventsToBookProps> = () => {
 
     const getEventsToBook = async () => {
         try {
-            const res = await instance.get('/events-to-book');
+            const res = await instance('GET', '/events-to-book');
             setEventsToBook(res.data.data);
         } catch (err) {
             console.error(err);
@@ -90,7 +90,7 @@ const EventsToBook: FunctionComponent<EventsToBookProps> = () => {
     const handleSubmitEventToBookClick = async (values: z.infer<typeof eventToBookSchema>) => {
         try {
             setErrors({});
-            await instance.post('/event-to-book', { ...values });
+            await instance('POST', '/event-to-book', { ...values });
             setShowCreateEventToBookForm(false);
             router.refresh();
             getEventsToBook();

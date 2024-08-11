@@ -32,7 +32,7 @@ export const ourFileRouter = {
             // console.log("Upload complete for userId:", metadata.userId);
             // console.log("file", file);
 
-            const res = await instance.post('/file', { 
+            const res = await instance('POST', '/file', { 
                 file_url: 'https://utfs.io/a/' + process.env.UPLOADTHING_APP_ID + '/' + file.key,
                 user_id: metadata.userId,
                 type: FileType.PROFILE_PICTURE,

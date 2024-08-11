@@ -85,7 +85,7 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
 
     const getEvents = async () => {
         try {
-            const res = await instance.get('/event' 
+            const res = await instance('GET', '/event' 
                 + (onlyCurrentUsersEvents ? `?organizer_id=${user?.id}` : `?status=${isOnAdminPage ? EVENT_STATUSES.PENDING : EVENT_STATUSES.APPROVED}`) 
                 + '&exact_match=true'
             )
@@ -104,7 +104,7 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
 
     const getEventsToBook = async () => {
         try {
-            const res = await instance.get('/events-to-book');
+            const res = await instance('GET', '/events-to-book');
             setEventsToBook(res.data.data);
         } catch (err) {
             console.error('There was an error fetching the events!', err);

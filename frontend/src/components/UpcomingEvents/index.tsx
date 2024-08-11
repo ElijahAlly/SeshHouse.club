@@ -24,11 +24,7 @@ const UpcomingEvents: FunctionComponent<UpcomingEventsProps> = () => {
         try {
             const simpleRes = await axios.get('https://sesh-house-koa-server-production.up.railway.app/api/event');
             console.log(simpleRes)
-            const res = await instance.get('/event?status=APPROVED', {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
+            const res = await instance('GET', '/event?status=APPROVED', null);
             const newEvents = res.data.data.sort((eventA: Event, eventB: Event) => {
                 // Get the earliest date in each event's selectedDates array
                 const earliestDateA = getEarliestDate(eventA);

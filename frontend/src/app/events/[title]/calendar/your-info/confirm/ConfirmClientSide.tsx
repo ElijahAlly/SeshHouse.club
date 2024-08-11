@@ -30,7 +30,7 @@ const ConfirmClientSide: FunctionComponent<ConfirmClientSideProps> = ({ user }) 
     const createEvent = async () => {
         // console.log('createEvent', eventToBook)
         try {
-            await instance.post(`/event`, {
+            await instance('POST', `/event`, {
                 title: eventTitle,
                 description,
                 dates: {
@@ -69,7 +69,7 @@ const ConfirmClientSide: FunctionComponent<ConfirmClientSideProps> = ({ user }) 
     }
 
     const getEventToBook = async () => {
-        const eventToBookRes = await instance.get(`/event-to-book?title=${eventTitle}`);
+        const eventToBookRes = await instance('GET', `/event-to-book?title=${eventTitle}`);
         // console.log('event res', eventToBookRes.data.data[0]);
         setEventToBook(eventToBookRes.data.data[0]);
     }

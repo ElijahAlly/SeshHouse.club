@@ -12,7 +12,7 @@ const Cafe = () => {
     useEffect(() => {
         const getCafe = async () => {
             try {
-                const res = await instance.get('/cafe')
+                const res = await instance('GET', '/cafe')
                 setCafe(res.data);
             } catch (err) {
                 console.error('There was an error fetching the Cafe!', err);

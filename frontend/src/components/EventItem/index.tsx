@@ -41,7 +41,7 @@ const EventItem: React.FC<Props> = ({ event, user: currentUser, isOnAdminPage, i
     const getEventCreator = async () => {
       if (!event || !Number(event.id)) return;
       try {
-        const res = await instance.get('/user?exact_match=true&id=' + event.organizer_id);
+        const res = await instance('GET', '/user?exact_match=true&id=' + event.organizer_id);
         // console.log('user res', res);
         setEventCreator(res.data.data[0]);
       } catch (err) {
@@ -53,7 +53,7 @@ const EventItem: React.FC<Props> = ({ event, user: currentUser, isOnAdminPage, i
 
   const updateEventStatus = async (status: EventStatusType) => {
     try {
-      await instance.put('/event', {
+      await instance('PUT', '/event', {
         id: event.id,
         status
       });

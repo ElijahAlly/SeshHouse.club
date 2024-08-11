@@ -122,7 +122,7 @@ const MyProfileClientSide: FunctionComponent = () => {
             try {
                 const dataToSubmit = userSchema.parse(formData);
                 setErrors({});
-                const res = await instance.put('/user', { id: user?.id, ...dataToSubmit });
+                const res = await instance('PUT', '/user', { id: user?.id, ...dataToSubmit });
                 await resetUserOnFrontend(res.data.user);
                 setSaved(true);
                 setTimeout(() => setSaved(false), 1800);
