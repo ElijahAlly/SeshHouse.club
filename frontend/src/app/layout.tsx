@@ -41,17 +41,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
-            <CookiesProvider>
-              <TooltipProvider>
-                <DefaultLayout user={user}>
-                  {children}
-                </DefaultLayout>
-              </TooltipProvider>
-            </CookiesProvider>
+          <CookiesProvider>
+            <TooltipProvider>
+              <DefaultLayout user={user}>
+                {children}
+              </DefaultLayout>
+            </TooltipProvider>
+          </CookiesProvider>
         </ThemeProvider>
       </body>
     </html>

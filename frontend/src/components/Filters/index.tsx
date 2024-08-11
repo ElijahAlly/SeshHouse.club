@@ -1,75 +1,133 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useState } from "react";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "../ui/button";
+import { EVENT_ROOMS, EVENT_STATUSES, EVENT_TYPES, EventRoomType, EventStatusType, EventType, getFormattedRoomType, getFormattedType } from "@/types/Event";
 
 interface FiltersProps {
     type: 'events' | 'cafeitems' | 'users';
+    onApplyFilters: (filters: any) => void;
+    prevFilters: any;
+    shouldShowStatuses: boolean;
 }
 
-const Filters: FunctionComponent<FiltersProps> = ({ type }) => {
+const Filters: FunctionComponent<FiltersProps> = ({ type, onApplyFilters, prevFilters, shouldShowStatuses }) => {
+    const [selectedEventType, setSelectedEventType] = useState<EventType | undefined>(undefined);
+    const [selectedEventStatus, setSelectedEventStatus] = useState<EventStatusType | undefined>(undefined);
+    const [selectedEventRooms, setSelectedEventRooms] = useState<EventRoomType[]>([]);
+    const [openFilters, setOpenFilters] = useState<boolean>(false);
+
+    const applyFilters = () => {
+        onApplyFilters({
+            eventType: selectedEventType,
+            eventStatus: selectedEventStatus,
+            eventRoom: selectedEventRooms,
+        });
+        setOpenFilters(false);
+    };
+
+    const cancelAndCloseFilters = () => {
+        onApplyFilters(prevFilters);
+        setOpenFilters(false);
+    };
+
+    const clearAllFilters = () => {
+        setSelectedEventType(undefined);
+        setSelectedEventStatus(undefined);
+        setSelectedEventRooms([]);
+        onApplyFilters({
+           eventType: undefined,
+            eventStatus: undefined,
+            eventRoom: undefined, 
+        });
+        setOpenFilters(false);
+    };
+    
+    const handleFilterToggle = (isOpen: boolean) => {
+        setOpenFilters(isOpen);
+    }
+
+    const isFiltersActive = !!(selectedEventRooms.length > 0 || selectedEventStatus || selectedEventType);
+
     return (
-        <div className="sticky top-0 left-0 md:relative h-72 md:h-96 max-h-96 flex flex-col items-center w-full md:w-2/5 border rounded-md px-6 pb-6 mr-6 lg:mr-12 overflow-y-auto hover:shadow-md shadow-sm">
-            <h2 className='sticky top-0 left-0 bg-white text-xl font-light w-full h-fit p-3 text-center'>
-                Filters
-            </h2>
-            <div className='flex flex-col w-full h-fit'>
-                {type === 'events' && (
-                    <>
-                        <div className='flex flex-col'>
-                            <label className="my-2">Date</label>
-                            <input type="date" className="border p-2 rounded-md" />
+        <div className='flex flex-col items-center my-4'>
+            <Drawer modal={false} open={openFilters} onOpenChange={handleFilterToggle} onClose={() => setOpenFilters(false)} >
+                <DrawerTrigger className='border rounded-md hover:shadow-md p-2 mb-2'>{isFiltersActive ? 'Edit' : 'Add'} Filters +</DrawerTrigger>
+                <DrawerContent className='flex flex-col items-center w-full h-4/5 md:h-3/5 bg-white shadow-2xl px-6'>
+                    <hr 
+                        className='w-40 rounded-md bg-gray-200 hover:bg-gray-300 focus:bg-gray-300 active:bg-gray-300 transition-all duration-150' 
+                        style={{ cursor: 'grab', height: '4.5px' }} 
+                        onMouseDown={(e) => e.currentTarget.style.cursor = 'grabbing'}
+                        onMouseUp={(e) => e.currentTarget.style.cursor = 'grab'}
+                    />
+                    <DrawerHeader className='flex flex-col items-center'>
+                        <DrawerTitle className='text-md md:text-xl'>Set Filters to narrow down Event search</DrawerTitle>
+                        <DrawerDescription className='text-xs md:text-lg'>For specific dates, close and choose dates on calendar.</DrawerDescription>
+                    </DrawerHeader>
+                    <div className='w-full my-3 flex flex-wrap justify-around'>
+                        <div
+                            onClick={applyFilters}
+                            className='text-center max-w-fit m-2 rounded-md border select-none border-green-500 hover:border-green-600 text-green-500 hover:text-green-600 p-1'
+                        >
+                            <DrawerClose>Set Filters</DrawerClose>
                         </div>
-                        <div className='flex flex-col'>
-                            <label className="my-2">Location</label>
-                            <input type="text" className="border p-2 rounded-md" />
+                        {isFiltersActive && (
+                            <Button
+                                onClick={clearAllFilters}
+                                className='text-center max-w-fit m-2 rounded-md border select-none border-red-500 hover:border-red-600 text-red-500 hover:text-red-600 p-1'
+                            >
+                                Clear All Filters
+                            </Button>
+                        )}
+                        <div 
+                            onClick={cancelAndCloseFilters}
+                            className='text-center max-w-fit m-2 rounded-md border select-none border-yellow-500 hover:border-yellow-600 text-yellow-500 hover:text-yellow-600 p-1'
+                        >
+                            <DrawerClose>Cancel & Close</DrawerClose>
                         </div>
-                        <div className='flex flex-col'>
-                            <label className="my-2">Attendee Count</label>
-                            <input type="number" className="border p-2 rounded-md" />
-                        </div>
-                        <div className='flex flex-col'>
-                            <label className="my-2">Type</label>
-                            <select className="border p-2 rounded-md">
-                                <option value="">Select Type</option>
-                                <option value="concert">Concert</option>
-                                <option value="conference">Conference</option>
-                                <option value="workshop">Workshop</option>
-                            </select>
-                        </div>
-                    </>
-                )}
-                {type === 'cafeitems' && (
-                    <>
-                        <div className='flex flex-col'>
-                            <label className="my-2">Category</label>
-                            <select className="border p-2 rounded-md">
-                                <option value="">Select Category</option>
-                                <option value="coffee">Coffee</option>
-                                <option value="tea">Tea</option>
-                                <option value="pastry">Pastry</option>
-                            </select>
-                        </div> 
-                        <div className='flex flex-col'>
-                            <label className="my-2">Price Range</label>
-                            <input type="text" className="border p-2 rounded-md" placeholder="e.g., $5 - $15" />
-                        </div>
-                    </>
-                )}
-                {type === 'users' && (
-                    <>
-                        <div className='flex flex-col'>
-                            <label className="my-2">Username</label>
-                            <input type="text" className="border p-2 rounded-md" />
-                        </div>
-                        <div className='flex flex-col'>
-                            <label className="my-2">Email</label>
-                            <input type="email" className="border p-2 rounded-md" />
-                        </div>
-                        <div className='flex flex-col'>
-                            <label className="my-2">Date Joined</label>
-                            <input type="date" className="border p-2 rounded-md" />
-                        </div>
-                    </>
-                )}
-            </div>
+                    </div>
+                    <div className='h-full w-full border rounded-sm shadow-sm hover:shadow-md p-4 mb-12 overflow-y-auto'>
+                        <Select value={selectedEventType || undefined} onValueChange={(str) => setSelectedEventType(str as EventType)}>
+                            <SelectTrigger className="w-fit my-3 p-4">
+                                <SelectValue placeholder="Select Event Type" defaultValue={selectedEventType || undefined} />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white">
+                                <SelectGroup>
+                                    {Object.values({ALL: 'ALL', ...EVENT_TYPES}).map((eventType, i) => (
+                                        <SelectItem value={eventType} key={i}>{getFormattedType(eventType)}</SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        {shouldShowStatuses && (
+                            <Select value={selectedEventStatus || undefined} onValueChange={(str) => setSelectedEventStatus(str as EventStatusType)}>
+                                <SelectTrigger className="w-fit my-3 p-4">
+                                    <SelectValue placeholder="Select Event Status" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
+                                    <SelectGroup>
+                                        {Object.values({ALL: 'ALL', ...EVENT_STATUSES}).map((eventStatus, i) => (
+                                            <SelectItem value={eventStatus} key={i}>{getFormattedType(eventStatus)}</SelectItem>
+                                        ))} 
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        )}
+                        {/* <Select value={selectedEventRooms[0]} onValueChange={(str: EventRoomType) => setSelectedEventRooms(prev => {prev[0]= str; return prev})}>
+                            <SelectTrigger className="w-fit my-3 p-4">
+                                <SelectValue placeholder="Select a Room +" defaultValue={selectedEventRooms[1]} />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white">
+                                <SelectGroup>
+                                    {selectedEventRooms.map((room, i) => (
+                                        <SelectItem value={room} key={i}>{getFormattedRoomType(room)}</SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select> */}
+                    </div>
+                </DrawerContent>
+            </Drawer>
         </div>
     );
 }

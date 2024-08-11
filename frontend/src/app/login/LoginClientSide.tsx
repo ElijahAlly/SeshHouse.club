@@ -8,7 +8,7 @@ const LoginClientSide: React.FC = () => {
 
     return (
         <div className='flex justify-center w-screen'>
-            <AuthForm page={params.get('signup') ? 'signup' : 'login'}/>
+            <AuthForm page={params.get('signup') ? 'signup' : 'login'} showSideCards={true} isOnEventCreationPage={false} />
         </div>
     )
 }

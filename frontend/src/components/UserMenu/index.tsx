@@ -16,26 +16,27 @@ const UserMenu: React.FC<Props> = ({ user, pathname }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="cursor-pointer rounded-sm">
-          <Avatar>
-            <AvatarImage height={42} src={user?.profile_picture || ''}  />
-            <AvatarFallback>
-              <Image 
-                src={user?.profile_picture || '/images/user-icon-96-white.png'}
-                height={42}
-                width={42}
-                alt="user profile icon/image"
-              />
-            </AvatarFallback>
-          </Avatar>
-        </div>
+        <Avatar>
+          <AvatarImage height={42} src={user?.profile_picture || ''} 
+            className={`cursor-pointer rounded-full mr-8 border-2 border-transparent ${pathname.startsWith('/my-profile') ? ' border-green-500 hover:border-green-500' : 'hover:border-green-500'}`}
+          />
+          <AvatarFallback>
+            <Image 
+              src={user?.profile_picture || '/images/user-icon-96-white.png'}
+              height={42}
+              width={42}
+              alt="user profile icon/image"
+              className={`cursor-pointer rounded-full border-2 border-transparent ${pathname.startsWith('/my-profile') ? ' border-green-500 hover:border-green-500' : 'hover:border-green-500'}`}
+            />
+          </AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-white">
         {isUserloggedIn ? (
           <div className='flex flex-col p-1'>
             <DropdownMenuItem
-              className={`hover:bg-green-300 text-black rounded-sm cursor-pointer mb-2 ${pathname.startsWith('/my-profile') ? '' : 'bg-green-500 '}`} 
-              onClick={() => window.location.replace(ROUTE_PATHS.MY_PROFILE.INDEX)}
+              className={`text-white hover:bg-green-600 rounded-sm cursor-pointer mb-2 ${pathname.startsWith('/my-profile') ? 'bg-green-600' : 'bg-green-500 '}`} 
+              onClick={() => !pathname.startsWith('/my-profile') && window.location.replace(ROUTE_PATHS.MY_PROFILE.INDEX)}
             >
               My profile
             </DropdownMenuItem>
@@ -44,12 +45,12 @@ const UserMenu: React.FC<Props> = ({ user, pathname }) => {
         ) : (
           <div className='flex flex-col p-1'>
             <DropdownMenuItem 
-              className='hover:bg-green-300 hover:text-black p-2 rounded-sm cursor-pointer' 
+              className='hover:bg-green-300 p-2 rounded-sm cursor-pointer' 
               onClick={() => window.location.replace(ROUTE_PATHS.LOGIN)}
             >
               login
             </DropdownMenuItem>
-            <DropdownMenuItem className='hover:bg-green-300 hover:text-black p-2 rounded-sm cursor-pointer' onClick={() => window.location.replace(ROUTE_PATHS.SIGNUP)}>
+            <DropdownMenuItem className='hover:bg-green-300 p-2 rounded-sm cursor-pointer' onClick={() => window.location.replace(ROUTE_PATHS.SIGNUP)}>
               signup
             </DropdownMenuItem>
           </div>

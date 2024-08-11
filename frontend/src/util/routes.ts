@@ -3,7 +3,8 @@ export const ROUTE_PATHS = {
     EVENTS: {
         INDEX: '/events',
         SINGlE: '/events/{slug}',
-        TICKETS: '/events/{slug}/tickets'
+        TICKETS: '/events/{slug}/tickets',
+        CALENDAR: '/events/{slug}/calendar'
     },
     CAFE_ITEM: {
         INDEX: '/cafe',
@@ -15,3 +16,21 @@ export const ROUTE_PATHS = {
         INDEX: '/my-profile'
     }
 };
+
+export const getTitleToUrl = (title: string) => {
+    return encodeURI(title);
+}
+
+export const getUrlToDisplay = (titleUrl: string) => {
+    return decodeURI(titleUrl);
+}
+
+export const pathShouldNotHaveLink = (path: string): boolean => {
+    if (path !== 'events'
+        && path !== 'tickets'
+        && path !== 'calendar'
+    ) {
+        return true;
+    }
+    return false;
+}

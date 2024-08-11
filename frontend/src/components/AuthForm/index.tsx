@@ -3,17 +3,18 @@
 import { useEffect, useState } from 'react';
 import VanillaTilt from 'vanilla-tilt';
 import instance from '@/lib/axios';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { z } from "zod"
 import { Button } from '../ui/button';
 import Image from 'next/image';
 import { ROUTE_PATHS } from '@/util/routes';
 import { UserType } from '@/types/User';
-import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 
 const specialCharacters = '!@#$%&-_+=.'
 const numbers = '0123456789'
@@ -40,36 +41,62 @@ const signupFormSchema = z.object({
         message: "Username must be at least 2 characters.",
     }),
     email: z.string().email("Email must be valid"),
-    phone_number: z.string().regex(/^\+?[1-9]\d{1,14}$/, {
+    phone_number: z.string().optional().refine((value) => {
+        if (value && value.length > 0) {
+            const phoneNumber = parsePhoneNumberFromString(value, {
+                defaultCountry: 'US'
+            });
+            return phoneNumber?.isValid() || false;
+        }
+        return true;
+    }, {
         message: "Phone number must be a valid phone number.",
     }),
     password: z.string()
-    .min(8, {
-        message: "Password must be at least 8 characters.",
-    })
-    .refine((password) => password.includes(' '), { 
-        message: 'Password cannot include a space.'
-    })
-    .refine((password) => !password.split('').some((char: string) => specialCharacters.includes(char)), {
-        message: 'Password must include at least 1 special character ' + specialCharacters
-    })
-    .refine((password) => !password.split('').some((char: string) => numbers.includes(char)), {
-        message: 'Password must include at least 1 number ' + numbers
+    .min(8, { message: "Password must be at least 8 characters." })
+    .superRefine((password, ctx) => {
+        if (password.includes(' ')) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Password cannot include a space.',
+            });
+        }
+        if (!specialCharacters.split('').some((char) => password.includes(char))) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Password must include at least 1 special character: ${specialCharacters}`,
+            });
+        }
+        if (!numbers.split('').some((char) => password.includes(char))) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Password must include at least 1 number: ${numbers}`,
+            });
+        }
     }),
-    date_of_birth: z.string().refine((date) => {
-        const dateArr = date.split('-');
-        return new Date(Number(dateArr[0]), Number(dateArr[1]), Number(dateArr[2])) <= new Date(today.getFullYear() - 18, today.getMonth(), today.getDay())
-    }, { message: "Must be 18 or older to sign up." }),
+    date_of_birth: z.date()
+        .refine((date) => {
+            if (date === today) return false;
+            const minDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+            return date <= minDate;
+        }, { message: "Must be 18 or older to sign up." }),
 })
 
 interface Props {
-    page?: 'login' | 'signup'
+    page?: 'login' | 'signup';
+    showSideCards: boolean;
+    isOnEventCreationPage: boolean;
 }
 
-const AuthForm: React.FC<Props> = ({ page }) => {
+const AuthForm: React.FC<Props> = ({ page, showSideCards, isOnEventCreationPage }) => {
+    const router = useRouter();
+    const path = usePathname();
+    const mobileScreenWidth = 770;
     const [showPassword, setShowPassword] = useState(false);
     const [showPasswordSrc, setShowPasswordSrc] = useState('/images/show-icon.png');
     const [hidePasswordSrc, setHidePasswordSrc] = useState('/images/hide-icon.png');
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= mobileScreenWidth);
+    const [section, setSection] = useState<'login' | 'signup'>(page ? page : 'login');
 
     const handleTogglePasswordView = () => {
         if (showPassword) {
@@ -87,8 +114,6 @@ const AuthForm: React.FC<Props> = ({ page }) => {
         }
     }
 
-    const [section, setSection] = useState<'login' | 'signup'>(page ? page : 'login');
-
     const handleToggleSection = () => {
         if (section === 'login') {
             setSection('signup');
@@ -100,16 +125,26 @@ const AuthForm: React.FC<Props> = ({ page }) => {
 
     const signupForm = useForm<z.infer<typeof signupFormSchema>>({
         resolver: zodResolver(signupFormSchema),
+        mode: 'all',
         defaultValues: {
             first_name: '',
             last_name: '',
             username: '',
             email: '',
             password: '',
-            date_of_birth: '',
+            date_of_birth: today,
             phone_number: ''
         },
     })
+
+    const signupFormIsValid = (): boolean => {
+        const { date_of_birth, email } = signupForm.getValues();
+        return (signupForm.formState.isValid
+            && !Object.entries(signupForm.formState.errors).length
+            && date_of_birth !== today
+            && email.length > 0
+        );
+    }
 
     const loginForm = useForm<z.infer<typeof loginFormSchema>>({
         resolver: zodResolver(loginFormSchema),
@@ -128,12 +163,15 @@ const AuthForm: React.FC<Props> = ({ page }) => {
             },
             body: JSON.stringify({ user, jwt }),
         })
-        window.location.replace(ROUTE_PATHS.MY_PROFILE.INDEX);
+        isOnEventCreationPage ? router.push(path + '/confirm') : window.location.replace(ROUTE_PATHS.MY_PROFILE.INDEX);
     }
 
     const handleSubmit = async (values: z.infer<typeof signupFormSchema>) => {
         try {
-            const signUpRes = await instance.post('/user', values);
+            const signUpRes = await instance.post('/user', {
+                ...values, 
+                date_of_birth: values.date_of_birth.toISOString().split('T')[0] 
+            });
             loginUserOnFrontend(signUpRes.data)
         } catch (err: any) {
             console.error(err)
@@ -143,7 +181,6 @@ const AuthForm: React.FC<Props> = ({ page }) => {
     const handleLogin = async (values: z.infer<typeof loginFormSchema>) => {
         try {
             const loginRes = await instance.post('/login', values);
-            console.log('loginRes', loginRes);
             loginUserOnFrontend(loginRes.data);
         } catch (err: any) {
             console.error(err)
@@ -178,9 +215,22 @@ const AuthForm: React.FC<Props> = ({ page }) => {
         }
     }, [section, setSection])
 
+    const handleResize = () => {
+        setIsMobile(window.innerWidth <= mobileScreenWidth);
+    };
+
+    useEffect(() => {
+        window.addEventListener('resize', handleResize);
+        handleResize();
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
     const getLoginSection = () => {
         return (
-            <div className="bg-slate-400 h-full w-1/2 z-10 flex justify-center transition-transform duration-700">
+            <div className={`bg-slate-400 h-full ${(isMobile || !showSideCards) && 'w-full'} ${section === 'signup' && (isMobile || !showSideCards) ? 'hidden' : 'w-1/2'} z-10 flex justify-center transition-transform duration-700`}>
                 <div className='flex flex-col w-4/5 items-center py-6'>
                     <h2 className="text-2xl my-4">Login</h2>
                     <Button onClick={handleToggleSection} variant='link'>or signup</Button>
@@ -208,7 +258,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                         <FormControl>
                                             <div className="relative">
                                                 <Input 
-                                                    placeholder="Create your Password" 
+                                                    placeholder="Enter your Password" 
                                                     type={showPassword ? 'text' : 'password'} 
                                                     {...field} 
                                                 />
@@ -232,7 +282,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                             <div className='flex justify-center w-full'>
                                 <Button
                                     variant='default'
-                                    className={`my-4 w-4/5 ${!loginForm.formState.isValid ? 'cursor-not-allowed' : 'bg-green-500 hover:bg-green-700 cursor-pointer'}`}
+                                    className={`my-4 w-4/5 text-white ${!loginForm.formState.isValid ? 'text-black cursor-not-allowed' : 'bg-green-500 hover:bg-green-700 cursor-pointer'}`}
                                     disabled={!loginForm.formState.isValid || loginForm.formState.isSubmitting}
                                 >
                                     Login
@@ -245,87 +295,88 @@ const AuthForm: React.FC<Props> = ({ page }) => {
         )
     };
 
-    // TODO: Fix signup form errors
-
     const getSignupSection = () => {
         return (
-            <div className="bg-slate-400 h-full w-1/2 z-10 flex justify-center transition-transform duration-700">
-                <div className='flex flex-col w-4/5 items-center py-6'>
+            <div className={`bg-slate-400 h-fit ${(isMobile || !showSideCards) && 'w-full'} ${section === 'login' && (isMobile || !showSideCards) ? 'hidden' : 'w-1/2'} z-10 flex justify-center transition-transform duration-700`}>
+                <div
+                    id='signup-section-scroll-cont'
+                    className='flex flex-col w-4/5 items-center p-6 overflow-y-scroll rounded-sm mb-4' 
+                >
                     <h2 className="text-2xl my-4">Signup</h2>
                     <Button onClick={handleToggleSection} variant='link'>or login</Button>
                     <Form {...signupForm}>
-                        <form onSubmit={signupForm.handleSubmit(handleSubmit)} className="w-full space-y-4">
-                            <FormField
+                        <form onSubmit={signupForm.handleSubmit(handleSubmit)} className="relative w-full space-y-4">
+                            <Controller
                                 control={signupForm.control}
                                 name="first_name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className='required'>First Name</FormLabel>
+                                        <FormLabel className="required">First Name</FormLabel>
                                         <FormControl>
                                             <Input placeholder="Enter your First Name" {...field} />
                                         </FormControl>
-                                        <FormMessage className='text-red-500 text-sm'>{!signupForm.formState.isValid && signupForm.formState.errors.first_name?.message}</FormMessage>
+                                        {signupForm.formState.errors.first_name && <FormMessage className="text-red-500 text-sm">{signupForm.formState.errors.first_name.message}</FormMessage>}
                                     </FormItem>
                                 )}
                             />
-                            <FormField
+                            <Controller
                                 control={signupForm.control}
                                 name="last_name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className='required'>Last Name</FormLabel>
+                                        <FormLabel className="required">Last Name</FormLabel>
                                         <FormControl>
                                             <Input placeholder="Enter your Last Name" {...field} />
                                         </FormControl>
-                                        <FormMessage className='text-red-500 text-sm'>{!signupForm.formState.isValid && signupForm.formState.errors.last_name?.message}</FormMessage>
+                                        {signupForm.formState.errors.last_name && <FormMessage className="text-red-500 text-sm">{signupForm.formState.errors.last_name.message}</FormMessage>}
                                     </FormItem>
                                 )}
                             />
-                            <FormField
+                            <Controller
                                 control={signupForm.control}
                                 name="username"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className='required'>Username</FormLabel>
+                                        <FormLabel className="required">Username</FormLabel>
                                         <FormControl>
                                             <Input placeholder="Enter your Username" {...field} />
                                         </FormControl>
-                                        <FormMessage className='text-red-500 text-sm'>{!signupForm.formState.isValid && signupForm.formState.errors.username?.message}</FormMessage>
+                                        {signupForm.formState.errors.username && <FormMessage className="text-red-500 text-sm">{signupForm.formState.errors.username.message}</FormMessage>}
                                     </FormItem>
                                 )}
                             />
-                            <FormField
+                            <Controller
                                 control={signupForm.control}
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className='required'>Email</FormLabel>
+                                        <FormLabel className="required">Email</FormLabel>
                                         <FormControl>
                                             <Input placeholder="Enter your Email" {...field} />
                                         </FormControl>
-                                        <FormMessage className='text-red-500 text-sm'>{!signupForm.formState.isValid && signupForm.formState.errors.email?.message}</FormMessage>
+                                        {signupForm.formState.errors.email && <FormMessage className="text-red-500 text-sm">{signupForm.formState.errors.email.message}</FormMessage>}
                                     </FormItem>
                                 )}
                             />
-                            <FormField
+                            <Controller
                                 control={signupForm.control}
                                 name="phone_number"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className='optional'>Phone Number</FormLabel>
+                                        <FormLabel className="optional">Phone Number</FormLabel>
                                         <FormControl>
                                             <Input placeholder="Enter your Phone Number" {...field} />
                                         </FormControl>
-                                        <FormMessage className='text-red-500 text-sm'>{!signupForm.formState.isValid && signupForm.formState.errors.phone_number?.message}</FormMessage>
+                                        {signupForm.formState.errors.phone_number && <FormMessage className="text-red-500 text-sm">{signupForm.formState.errors.phone_number.message}</FormMessage>}
                                     </FormItem>
                                 )}
                             />
-                            <FormField
+                            <Controller
                                 control={signupForm.control}
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className='required'>Password</FormLabel>
+                                        <FormLabel className="required">Password</FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                                 <Input 
@@ -346,44 +397,37 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                                                 </button>
                                             </div>
                                         </FormControl>
-                                        <ul className="mt-2">
-                                            {/* {signupFormSchema.shape.password._def.schema.map((check: any, index: number) => (
-                                                <li
-                                                    key={index}
-                                                    className={`${
-                                                        signupForm.formState.errors.password && signupForm.formState.errors.password.message?.includes(check.message)
-                                                            ? 'text-red-500'
-                                                            : signupForm.formState.isSubmitted && !signupForm.formState.errors.password
-                                                            ? 'text-green-500'
-                                                            : 'text-gray-500'
-                                                    }`}
-                                                >
-                                                    {check.message}
-                                                </li>
-                                            ))} */}
-                                        </ul>
-                                        {/* <FormMessage className={'text-red-500 text-sm'}>{signupForm.formState.isValid && signupForm.formState.errors.password?.message}</FormMessage> */}
+                                        {signupForm.formState.errors.password && <FormMessage className="text-red-500 text-sm">{signupForm.formState.errors.password.message}</FormMessage>}
                                     </FormItem>
                                 )}
                             />
-                            <FormField
+                            <Controller
                                 control={signupForm.control}
                                 name="date_of_birth"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className='required'>Date of birth</FormLabel>
+                                        <FormLabel className="required">Date of birth</FormLabel>
                                         <FormControl>
-                                            <Input type='date' placeholder="Enter date of birth" {...field} />
+                                            <Input
+                                                type="date"
+                                                placeholder="Enter date of birth"
+                                                value={field.value ? (
+                                                    field.value.toISOString().split('T')[0] === today.toISOString().split('T')[0] 
+                                                        ? '' 
+                                                        : field.value.toISOString().split('T')[0]
+                                                ) : ''}
+                                                onChange={(e) => field.onChange(new Date(e.target.value))}
+                                            />
                                         </FormControl>
-                                        <FormMessage className='text-red-500 text-sm'>{!signupForm.formState.isValid && signupForm.formState.errors.date_of_birth?.message}</FormMessage>
+                                        {signupForm.formState.errors.date_of_birth && <FormMessage className="text-red-500 text-sm">{signupForm.formState.errors.date_of_birth.message}</FormMessage>}
                                     </FormItem>
                                 )}
                             />
-                            <div className='flex justify-center w-full'>
+                            <div className="flex justify-center w-full">
                                 <Button
-                                    variant='default'
-                                    className={`my-4 w-4/5 ${!signupForm.formState.isValid ? 'cursor-not-allowed' : 'bg-green-500 hover:bg-green-700 cursor-pointer'}`}
-                                    disabled={!signupForm.formState.isValid || signupForm.formState.isSubmitting}
+                                    variant="default"
+                                    className={`my-4 w-4/5 text-white ${!signupFormIsValid() ? 'text-black cursor-not-allowed' : 'bg-green-500 hover:bg-green-700 cursor-pointer'}`}
+                                    disabled={!signupFormIsValid()}
                                 >
                                     Signup
                                 </Button>
@@ -396,10 +440,10 @@ const AuthForm: React.FC<Props> = ({ page }) => {
     };
 
     return (
-        <div className="relative flex overflow-hidden mt-16 w-4/5 h-fit rounded-md border">
+        <div className={`relative flex overflow-hidden ${isOnEventCreationPage ? 'mt-2' : 'mt-16'} w-4/5 h-fit rounded-md border`}>
             {getLoginSection()}
             {getSignupSection()}
-            <div
+            {showSideCards && <div
                 className={`hidden md:block absolute top-0 right-0 overflow-hidden w-1/2 h-full z-50 bg-green-500 transition-transform duration-700 transform ${
                     section === 'login' ? 'translate-x-0' : 'translate-x-full'
                 }`}
@@ -417,7 +461,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                         className='priority rounded-md mt-4'
                         priority
                     />
-                    <div className='flex flex-col mt-6 w-4/5'>
+                    {/* <div className='flex flex-col mt-6 w-4/5'>
                         <Link href={ROUTE_PATHS.EVENTS.INDEX} className='m-1 text-white hover:text-gray-200 hover:underline-offset-2'>
                             Get your tickets to the next event
                         </Link>
@@ -427,10 +471,10 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                         <Link href={ROUTE_PATHS.HOME} className='m-1 text-white hover:text-gray-200 hover:underline-offset-2'>
                             And so much more!
                         </Link>
-                    </div>
+                    </div> */}
                 </div>
-            </div>
-            <div
+            </div>}
+            {showSideCards && <div
                 className={`hidden md:block absolute top-0 left-0 overflow-hidden w-1/2 h-full z-50 bg-green-500 transition-transform duration-700 transform ${
                     section === 'signup' ? '-translate-x-0' : '-translate-x-full'
                 }`}
@@ -449,7 +493,7 @@ const AuthForm: React.FC<Props> = ({ page }) => {
                         priority
                     />
                 </div>
-            </div>
+            </div>}
         </div>
     );
 }

@@ -38,12 +38,12 @@ const NavBar: React.FC<NavBarProps> = ({ user }) => {
                 title="Home"
                 href={ROUTE_PATHS.HOME}
                 active={pathname === '/'}
-                className={`mr-8 ${pathname === '/' ? 'text-green-500 hover:text-green-600' : 'text-slate-300 hover:text-green-500'}`}
+                className={`mr-8 ${pathname === '/' ? 'text-green-500 hover:text-green-500 underline' : 'hover:text-green-500'}`}
             >Home</NavigationMenuLink>
             <NavigationMenuLink
                 title="Events"
                 href={ROUTE_PATHS.EVENTS.INDEX}
-                className={`mr-8 ${pathname.startsWith('/events') ? 'text-green-500 hover:text-green-600' : 'text-slate-300 hover:text-green-500'}`}
+                className={`mr-8 ${pathname.startsWith('/events') ? 'text-green-500 hover:text-green-500 underline' : 'hover:text-green-500'}`}
             >Events</NavigationMenuLink>
             {/* <div className='mx-6'>
                 // TODO: Fix dark: not working

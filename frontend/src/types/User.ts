@@ -1,3 +1,11 @@
+export const USER_ROLES =  {
+    USER: 'USER',
+    ADMIN: 'ADMIN',
+    SUPER_ADMIN: 'SUPER_ADMIN'
+}
+
+export type UserRoleType = (typeof USER_ROLES)[keyof typeof USER_ROLES];
+
 export interface UserType {
     id: number;
     first_name: string;
@@ -6,6 +14,7 @@ export interface UserType {
     email: string;
     phone_number: string;
     date_of_birth: string; // ISO string format
+    role: UserRoleType;
     profile_picture?: string;
     bio?: string;
     address?: string;

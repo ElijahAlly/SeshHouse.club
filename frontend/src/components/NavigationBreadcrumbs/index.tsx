@@ -1,6 +1,7 @@
 import { usePathname } from "next/navigation";
 import { FunctionComponent } from "react";
 import Link from "next/link";
+import { getUrlToDisplay, pathShouldNotHaveLink } from "@/util/routes";
 
 interface NavigationBreadcrumbsProps {}
 
@@ -13,25 +14,30 @@ const NavigationBreadcrumbs: FunctionComponent<NavigationBreadcrumbsProps> = () 
     }
 
     return (
-        <div className="h-4 flex w-full py-3 px-8 mt-4">
+        <div className="h-4 flex w-full px-8 mt-4 flex-wrap">
             {paths.map((path, index) => {
-            // Construct the href for each breadcrumb link
-            const href = '/' + paths.slice(0, index + 1).join('/');
-            
-            // Determine if this is the last breadcrumb
-            const isLast = index === paths.length - 1;
+                const isNotLink = pathShouldNotHaveLink(path) || path === 'your-info';
+                // Construct the href for each breadcrumb link
+                const href = '/' + paths.slice(0, index + 1).join('/');
+                
+                // Determine if this is the last breadcrumb
+                const isLast = index === paths.length - 1;
 
-            return (
-                <span key={index} className="flex items-center">
-                    <Link href={href} className={`mr-2 ${isLast ? 'font-bold' : ''}`} style={{
-                        textDecoration: `0.84px solid ${isLast ? 'transparent' : 'gray'} underline`,
-                        textUnderlineOffset: '3px'
-                    }}>
-                        {path}
-                    </Link>
-                    {!isLast && <span className="mr-2">{'>'}</span>}
-                </span>
-            );
+                return (
+                    <span key={index} className="flex items-center">
+                        {isNotLink ? (
+                            <h3 className={`mx-2 ${isLast ? 'font-bold' : ''}`}>{getUrlToDisplay(path)}</h3>
+                        ) : (
+                            <Link href={href} className={`mr-2 ${isLast ? 'font-bold' : ''}`} style={{
+                                textDecoration: `0.84px solid ${isLast ? 'transparent' : 'gray'} underline`,
+                                textUnderlineOffset: '3px'
+                            }}>
+                                {path}
+                            </Link>
+                        )}
+                        {!isLast && <span className='mr-2'>{'>'}</span>}
+                    </span>
+                );
             })}
         </div>
     );
