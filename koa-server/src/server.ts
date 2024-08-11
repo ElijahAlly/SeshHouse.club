@@ -34,7 +34,8 @@ app.use(
             return ''; // Block the request if the origin is not allowed
         }, // dev http://localhost:4000 and rod https://www.seshhouse.club
         credentials: true,
-        allowHeaders: ['Content-Type', 'Authorization']
+        allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     })
 );
 app.use(logger());
