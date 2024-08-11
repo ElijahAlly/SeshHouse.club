@@ -22,7 +22,8 @@ const UpcomingEvents: FunctionComponent<UpcomingEventsProps> = () => {
     const getEvents = async () => {
         try {
             const res = await instance('GET', '/event?status=APPROVED', null);
-            const newEvents = res.data.data.sort((eventA: Event, eventB: Event) => {
+            console.log('res', res);
+            const newEvents = res.data.sort((eventA: Event, eventB: Event) => {
                 // Get the earliest date in each event's selectedDates array
                 const earliestDateA = getEarliestDate(eventA);
                 const earliestDateB = getEarliestDate(eventB);
