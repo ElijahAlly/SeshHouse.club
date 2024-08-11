@@ -55,7 +55,7 @@ const EventsToBook: FunctionComponent<EventsToBookProps> = () => {
     const getEventsToBook = async () => {
         try {
             const res = await instance('GET', '/events-to-book');
-            setEventsToBook(res.data.data);
+            setEventsToBook(res.data);
         } catch (err) {
             console.error(err);
         }

@@ -172,6 +172,7 @@ const AuthForm: React.FC<Props> = ({ page, showSideCards, isOnEventCreationPage 
                 ...values, 
                 date_of_birth: values.date_of_birth.toISOString().split('T')[0] 
             });
+            console.log(signUpRes);
             loginUserOnFrontend(signUpRes.data)
         } catch (err: any) {
             console.error(err)

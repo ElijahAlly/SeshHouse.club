@@ -41,7 +41,7 @@ export const ourFileRouter = {
             // console.log(res.data.data);
 
             // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
-            return res.data.data;
+            return res.data;
         }),
 } satisfies FileRouter;
 

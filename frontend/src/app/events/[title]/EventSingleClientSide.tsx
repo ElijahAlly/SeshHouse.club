@@ -16,7 +16,7 @@ const EventSingleClientSide: React.FC = () => {
         const getEvent = async () => {
             try {
                 const res = await instance('GET', `/event?title=${pathname.split('/')[2]}`);
-                setEvent(res.data.data[0]);
+                setEvent(res.data[0]);
             } catch (err) {
                 console.error('There was an error fetching the events!', err);
             }
@@ -30,8 +30,7 @@ const EventSingleClientSide: React.FC = () => {
         if (!event || !Number(event.id)) return;
         try {
             const res = await instance('GET', '/user?exact_match=true&id=' + event.organizer_id);
-            // console.log('user res', res);
-            setEventCreator(res.data.data[0]);
+            setEventCreator(res.data[0]);
         } catch (err) {
             console.error('There was an error fetching the events!', err);
         }

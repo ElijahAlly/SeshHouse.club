@@ -6,7 +6,6 @@ import EventItem from '../EventItem';
 import instance from '../../lib/axios';
 import Filters from '../Filters';
 import BookEventItem from '../BookEventItem';
-import axios from 'axios';
 import EventCalendar from '../EventCalendar';
 import { UserType } from '@/types/User';
 import { usePathname, useRouter } from 'next/navigation';
@@ -90,7 +89,7 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
                 + '&exact_match=true'
             )
             // console.log('events res', res);
-            const newEvents = res.data.data.sort((eventA: Event, eventB: Event) => {
+            const newEvents = res.data.sort((eventA: Event, eventB: Event) => {
                 // Get the earliest date in each event's selectedDates array
                 const earliestDateA = Math.min(...eventA.dates.selectedDates.map(date => new Date(date).getTime()));
                 const earliestDateB = Math.min(...eventB.dates.selectedDates.map(date => new Date(date).getTime()));
@@ -105,7 +104,7 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
     const getEventsToBook = async () => {
         try {
             const res = await instance('GET', '/events-to-book');
-            setEventsToBook(res.data.data);
+            setEventsToBook(res.data);
         } catch (err) {
             console.error('There was an error fetching the events!', err);
         }

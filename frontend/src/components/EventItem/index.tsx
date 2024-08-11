@@ -43,7 +43,7 @@ const EventItem: React.FC<Props> = ({ event, user: currentUser, isOnAdminPage, i
       try {
         const res = await instance('GET', '/user?exact_match=true&id=' + event.organizer_id);
         // console.log('user res', res);
-        setEventCreator(res.data.data[0]);
+        setEventCreator(res.data[0]);
       } catch (err) {
         console.error('There was an error fetching the events!', err);
       }
