@@ -4,7 +4,7 @@
   "description": "seshhouse server",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf dist/ && tsc --build",
+    "build": "rm -rf dist/ && npm install --omit=dev && tsc --build",
     "dev": "rm -rf dist/ && npm run build && ts-node-dev src/server.ts",
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
