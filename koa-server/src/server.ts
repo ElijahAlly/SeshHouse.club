@@ -21,7 +21,9 @@ app.keys = [process.env.SESSION_SECRET || `session-secret-you-WILL-NEVER_guess:)
 app.use(bodyParser());
 
 const allowedOrigins = ['https://www.seshhouse.club', 'https://seshhouse.club'];
-
+app.use(async (ctx) => {
+    ctx.type = 'application/json';
+});
 app.use(
     cors({
         origin: (ctx: Koa.Context): string => {
