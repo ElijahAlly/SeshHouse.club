@@ -6,14 +6,13 @@ const instance = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', params: strin
     const headers: HeadersInit = {};
 
     // Set Content-Type header if body is provided
-    if (body) {
-        headers['Content-Type'] = 'application/json';
-    }
+    headers['Content-Type'] = 'application/json';
 
     const response = await fetch(BASE_URL + (params ? params : ''), {
         method,
         body: body ? JSON.stringify(body) : null,
         credentials: 'include',
+        headers
     });
 
     if (!response.ok) {
