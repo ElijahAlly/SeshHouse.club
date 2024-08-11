@@ -278,7 +278,7 @@ const MyProfileClientSide: FunctionComponent = () => {
             )}
             {section === SECTION_ENUMS.settings && (
                 <div>
-                    <p>We are working on adding settings. Only Admins will see this page until it's complete.</p>
+                    <p>We are working on adding settings. Only Admins will see this page until it{"'"}s complete.</p>
                 </div>
             )}
         </div>

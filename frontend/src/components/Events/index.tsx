@@ -18,7 +18,7 @@ interface Props {
     isOnAdminPage: boolean;
     onlyCurrentUsersEvents?: boolean;
     isBooking?: boolean;
-    setShowConflictingDatesWarning: (val: boolean) => void;
+    setShowConflictingDatesWarning?: (val: boolean) => void;
 }
 
 interface Filters {
