@@ -23,8 +23,16 @@ const options = {
                 description: "Operations related to users"
             },
             {
+                name: "Emails",
+                description: "Operations related to users"
+            },
+            {
                 name: "Events",
                 description: "Operations related to events"
+            },
+            {
+                name: "EventsToBook",
+                description: "Operations related to events to book"
             },
             {
                 name: "Cafe Items",
@@ -37,8 +45,8 @@ const options = {
         ],
         servers: [
             {
-                url: 'https://sesh-house-koa-server-production.up.railway.app', 
-                description: 'Production server'
+                url: 'http://localhost:3000', 
+                description: 'Development server'
             },
         ],
         paths: {
@@ -447,7 +455,7 @@ const options = {
                                             "description": "User's password"
                                         }
                                     },
-                                    "required": ["first_name", "last_name", "username", "email", "phone_number", "password"]
+                                    "required": ["first_name", "last_name", "username", "email", "password"]
                                 }
                             }
                         }
@@ -997,6 +1005,14 @@ const options = {
                         },
                         {
                             in: 'query',
+                            name: 'status',
+                            schema: {
+                                type: 'string'
+                            },
+                            description: 'The event\'s associated status'
+                        },
+                        {
+                            in: 'query',
                             name: 'date',
                             schema: {
                                 type: 'string'
@@ -1026,9 +1042,6 @@ const options = {
                         },
                         400: {
                             description: 'Bad request. At least one query parameter is required.'
-                        },
-                        404: {
-                            description: 'Event not found.'
                         },
                         500: {
                             description: 'Internal Server Error'
@@ -1330,6 +1343,732 @@ const options = {
                     description: 'Deletes an event by its ID.',
                     parameters: [
                         { in: 'query', name: 'id', schema: { type: 'number' }, required: true, description: 'Unique identifier of the event to be deleted' }
+                    ],
+                    responses: {
+                        200: {
+                            description: 'Event deleted successfully',
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: 'object',
+                                        properties: {
+                                            code: { type: 'number', description: 'Status code of the response' },
+                                            status: { type: 'string', description: 'Response status' }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        400: { description: 'Bad request. ID is required.' },
+                        500: { description: 'Internal Server Error' }
+                    }
+                }
+            },
+            '/api/events-to-book': {
+                get: {
+                    "tags": ["EventsToBook"],
+                    "summary": "Retrieve a list of events to book",
+                    "description": "Fetches a list of events to book from the database. This route requires authentication.",
+                    "responses": {
+                        "200": {
+                            "description": "A list of events to book",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "code": {
+                                                "type": "number",
+                                                "description": "Status code of the response"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "description": "Response status"
+                                            },
+                                            "data": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "number",
+                                                            "description": "Unique identifier of the event"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "description": "Title of the event"
+                                                        },
+                                                        "description": {
+                                                            "type": "string",
+                                                            "description": "Description of the event"
+                                                        },
+                                                        "date": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "description": "Date and time of the event"
+                                                        },
+                                                        "location": {
+                                                            "type": "string",
+                                                            "description": "Location where the event takes place"
+                                                        },
+                                                        "capacity": {
+                                                            "type": "number",
+                                                            "description": "Maximum number of participants"
+                                                        },
+                                                        "organizer_id": {
+                                                            "type": "number",
+                                                            "description": "ID of the event organizer"
+                                                        },
+                                                        "type": {
+                                                            "type": "string",
+                                                            "description": "Type or category of the event"
+                                                        },
+                                                        "registration_deadline": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "description": "Deadline for event registration"
+                                                        },
+                                                        "registration_fee": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "description": "Fee required for event registration"
+                                                        },
+                                                        "tags": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            },
+                                                            "description": "Tags or keywords related to the event"
+                                                        },
+                                                        "rooms": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "CAFE",
+                                                                    "MUSIC_STUDIO",
+                                                                    "PODCAST_ROOM",
+                                                                    "UPSTAIRS_BAR",
+                                                                    "STAGE_HALL",
+                                                                    "UPSTAIRS_BACK_ROOM"
+                                                                ]
+                                                            },
+                                                            "description": "Rooms for the event"
+                                                        },
+                                                        "attendees_count": {
+                                                            "type": "number",
+                                                            "description": "Number of attendees registered for the event"
+                                                        },
+                                                        "thumbnail": {
+                                                            "type": "string",
+                                                            "description": "URL of the event thumbnail image"
+                                                        },
+                                                        "documents": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string",
+                                                                "format": "uri"
+                                                            },
+                                                            "description": "List of document URLs related to the event"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "500": {
+                            "description": "Internal Server Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "code": {
+                                                "type": "number",
+                                                "description": "Status code of the response"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "description": "Response status"
+                                            },
+                                            "message": {
+                                                "type": "string",
+                                                "description": "Error message"
+                                            }
+                                        },
+                                        "required": ["code", "status", "message"]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }, 
+            '/api/event-to-book': {
+                get: {
+                    "tags": ["EventsToBook"],
+                    "summary": "Retrieve an event to book by query parameters",
+                    "description": "Retrieve event to book details based on query parameters. At least one query parameter is required.",
+                    "parameters": [
+                        {
+                            "in": "query",
+                            "name": "id",
+                            "schema": {
+                                "type": "number"
+                            },
+                            "description": "The event ID"
+                        },
+                        {
+                            "in": "query",
+                            "name": "title",
+                            "schema": {
+                                "type": "string"
+                            },
+                            "description": "The event's title"
+                        },
+                        {
+                            "in": "query",
+                            "name": "tags",
+                            "schema": {
+                                "type": "string"
+                            },
+                            "description": "The event's associated tags"
+                        },
+                        {
+                            "in": "query",
+                            "name": "rooms",
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "CAFE",
+                                        "MUSIC_STUDIO",
+                                        "PODCAST_ROOM",
+                                        "UPSTAIRS_BAR",
+                                        "STAGE_HALL",
+                                        "UPSTAIRS_BACK_ROOM"
+                                    ]
+                                }
+                            },
+                            "description": "The event's associated rooms"
+                        },
+                        {
+                            "in": "query",
+                            "name": "type",
+                            "schema": {
+                                "type": "string"
+                            },
+                            "description": "The event's associated type"
+                        },
+                        {
+                            "in": "query",
+                            "name": "date",
+                            "schema": {
+                                "type": "string",
+                                "format": "date"
+                            },
+                            "description": "The event's date"
+                        },
+                        {
+                            "in": "query",
+                            "name": "exact_match",
+                            "schema": {
+                                "type": "string",
+                                "enum": ["true", "false"]
+                            },
+                            "description": "Whether to perform an exact match (true) or a partial match (false) on query parameters"
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "An event to book object",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/BookEventType"
+                                    }
+                                }
+                            }
+                        },
+                        "400": {
+                            "description": "Bad request. At least one query parameter is required"
+                        },
+                        "500": {
+                            "description": "Internal Server Error"
+                        }
+                    }
+                },
+                post: {
+                    "security": [
+                        {
+                            "BearerAuth": []
+                        }
+                    ],
+                    "tags": ["EventsToBook"],
+                    "summary": "Create a new event to book",
+                    "description": "Creates a new event to book with the provided details.",
+                    "requestBody": {
+                        "required": true,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Event's title"
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "description": "Description of the Event"
+                                        },
+                                        "dates": {
+                                            "type": "object",
+                                            "description": "Date of the Event"
+                                        },
+                                        "organizer_id": {
+                                            "type": "number",
+                                            "description": "User ID who created the Event"
+                                        },
+                                        "location": {
+                                            "type": "string",
+                                            "description": "Location of the Event"
+                                        },
+                                        "capacity": {
+                                            "type": "number",
+                                            "description": "Capacity of the Event"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Event type"
+                                        },
+                                        "registration_deadline": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "description": "Deadline to register for the Event to book"
+                                        },
+                                        "registration_fee": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "description": "Fee to register for the Event to book"
+                                        },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "description": "Tags related to the Event to book (separated by `,`)"
+                                        },
+                                        "rooms": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "CAFE",
+                                                    "MUSIC_STUDIO",
+                                                    "PODCAST_ROOM",
+                                                    "UPSTAIRS_BAR",
+                                                    "STAGE_HALL",
+                                                    "UPSTAIRS_BACK_ROOM"
+                                                ]
+                                            },
+                                            "description": "Rooms for the Event to book"
+                                        },
+                                        "attendees_count": {
+                                            "type": "number",
+                                            "description": "Count of attendees currently registered for the Event to book"
+                                        },
+                                        "thumbnail": {
+                                            "type": "string",
+                                            "description": "URL of the Event to book thumbnail"
+                                        },
+                                        "documents": {
+                                            "type": "object",
+                                            "description": "URLs of the Event to book documents"
+                                        }
+                                    },
+                                    "required": ["title", "description", "rooms", "type"]
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "201": {
+                            "description": "Created event",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "code": {
+                                                "type": "number",
+                                                "description": "Status code of the response"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "description": "Response status"
+                                            },
+                                            "data": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "number",
+                                                        "description": "Unique identifier of the event"
+                                                    },
+                                                    "title": {
+                                                        "type": "string",
+                                                        "description": "Title of the event"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "description": "Description of the event"
+                                                    },
+                                                    "dates": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "description": "Date and time of the event"
+                                                    },
+                                                    "location": {
+                                                        "type": "string",
+                                                        "description": "Location where the event takes place"
+                                                    },
+                                                    "capacity": {
+                                                        "type": "number",
+                                                        "description": "Maximum number of participants"
+                                                    },
+                                                    "organizer_id": {
+                                                        "type": "number",
+                                                        "description": "ID of the event organizer"
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "Type or category of the event"
+                                                    },
+                                                    "registration_deadline": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "description": "Deadline for event registration"
+                                                    },
+                                                    "registration_fee": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "description": "Fee required for event registration"
+                                                    },
+                                                    "tags": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "description": "Tags or keywords related to the event to book"
+                                                    },
+                                                    "rooms": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "CAFE",
+                                                                "MUSIC_STUDIO",
+                                                                "PODCAST_ROOM",
+                                                                "UPSTAIRS_BAR",
+                                                                "STAGE_HALL",
+                                                                "UPSTAIRS_BACK_ROOM"
+                                                            ]
+                                                        },
+                                                        "description": "Rooms for the event"
+                                                    },
+                                                    "attendees_count": {
+                                                        "type": "number",
+                                                        "description": "Number of attendees registered for the event to book"
+                                                    },
+                                                    "thumbnail": {
+                                                        "type": "string",
+                                                        "description": "URL of the event thumbnail image"
+                                                    },
+                                                    "documents": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "description": "List of document URLs related to the event to book"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "400": {
+                            "description": "Bad request. Required fields are missing.",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "code": {
+                                                "type": "number"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "message": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["code", "status", "message"]
+                                    }
+                                }
+                            }
+                        },
+                        "500": {
+                            "description": "Internal Server Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "code": {
+                                                "type": "number"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "message": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["code", "status", "message"]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                put: {
+                    "security": [
+                        {
+                            "BearerAuth": []
+                        }
+                    ],
+                    "tags": ["EventsToBook"],
+                    "summary": "Update an existing event to book",
+                    "description": "Updates an existing event to book with the provided details. The event to book ID is required in the request body.",
+                    "requestBody": {
+                        "required": true,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "Unique identifier of the event"
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Event's title"
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "description": "Description of the event"
+                                        },
+                                        "location": {
+                                            "type": "string",
+                                            "description": "Location of the event"
+                                        },
+                                        "capacity": {
+                                            "type": "number",
+                                            "description": "Capacity of the event"
+                                        },
+                                        "organizer_id": {
+                                            "type": "number",
+                                            "description": "User ID who created the event"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Event type"
+                                        },
+                                        "registration_deadline": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "description": "Deadline to register for the event"
+                                        },
+                                        "registration_fee": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "description": "Fee to register for the event"
+                                        },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "description": "Event tags (separated by `,`)"
+                                        },
+                                        "rooms": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "CAFE",
+                                                    "MUSIC_STUDIO",
+                                                    "PODCAST_ROOM",
+                                                    "UPSTAIRS_BAR",
+                                                    "STAGE_HALL",
+                                                    "UPSTAIRS_BACK_ROOM"
+                                                ]
+                                            },
+                                            "description": "Rooms for the event"
+                                        },
+                                        "attendees_count": {
+                                            "type": "number",
+                                            "description": "Count of attendees currently registered for the event"
+                                        },
+                                        "thumbnail": {
+                                            "type": "string",
+                                            "description": "Event thumbnail"
+                                        },
+                                        "documents": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "format": "uri"
+                                            },
+                                            "description": "Event documents"
+                                        }
+                                    },
+                                    "required": ["id"]
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Updated event",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "code": {
+                                                "type": "number",
+                                                "description": "Status code of the response"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "description": "Response status"
+                                            },
+                                            "data": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "number",
+                                                        "description": "Unique identifier of the event"
+                                                    },
+                                                    "title": {
+                                                        "type": "string",
+                                                        "description": "Title of the event"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "description": "Description of the event"
+                                                    },
+                                                    "date": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "description": "Date and time of the event"
+                                                    },
+                                                    "location": {
+                                                        "type": "string",
+                                                        "description": "Location where the event takes place"
+                                                    },
+                                                    "capacity": {
+                                                        "type": "number",
+                                                        "description": "Maximum number of participants"
+                                                    },
+                                                    "organizer_id": {
+                                                        "type": "number",
+                                                        "description": "ID of the event organizer"
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "Type or category of the event"
+                                                    },
+                                                    "registration_deadline": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "description": "Deadline for event registration"
+                                                    },
+                                                    "registration_fee": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "description": "Fee required for event registration"
+                                                    },
+                                                    "tags": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "description": "Tags or keywords related to the event"
+                                                    },
+                                                    "rooms": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "CAFE",
+                                                                "MUSIC_STUDIO",
+                                                                "PODCAST_ROOM",
+                                                                "UPSTAIRS_BAR",
+                                                                "STAGE_HALL",
+                                                                "UPSTAIRS_BACK_ROOM"
+                                                            ]
+                                                        },
+                                                        "description": "Rooms for the event"
+                                                    },
+                                                    "attendees_count": {
+                                                        "type": "number",
+                                                        "description": "Number of attendees registered for the event"
+                                                    },
+                                                    "thumbnail": {
+                                                        "type": "string",
+                                                        "description": "URL of the event thumbnail image"
+                                                    },
+                                                    "documents": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "format": "uri"
+                                                        },
+                                                        "description": "List of document URLs related to the event"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "400": {
+                            "description": "Bad request. ID is required."
+                        },
+                        "500": {
+                            "description": "Internal Server Error"
+                        }
+                    }
+                }
+            },
+            '/api/event-to-book/{id}': {
+                delete: {
+                    tags: ['EventsToBook'],
+                    summary: 'Delete an event to book',
+                    description: 'Deletes an event to book by its ID.',
+                    parameters: [
+                        { in: 'query', name: 'id', schema: { type: 'number' }, required: true, description: 'Unique identifier of the event to book to be deleted' }
                     ],
                     responses: {
                         200: {
@@ -1874,7 +2613,6 @@ const options = {
                                             "enum": [
                                                 "profile_picture",
                                                 "event_thumbnail",
-                                                "event_image",
                                                 "cafe_item_thumbnail",
                                                 "cafe_item_image",
                                                 "hero_image"
@@ -1971,7 +2709,142 @@ const options = {
                         }
                     }
                 }
-            }
+            },
+            "/api/send-email": {
+                post: {
+                    "tags": ["Emails"],
+                    "summary": "Send an email",
+                    "description": "Sends an email using the specified parameters.",
+                    "requestBody": {
+                        "required": true,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "to": {
+                                            "type": "string",
+                                            "description": "The recipient's email address"
+                                        },
+                                        "subject": {
+                                            "type": "string",
+                                            "description": "The subject of the email"
+                                        },
+                                        "first_name": {
+                                            "type": "string",
+                                            "description": "The first name of the recipient"
+                                        },
+                                        "last_name": {
+                                            "type": "string",
+                                            "description": "The last name of the recipient"
+                                        }
+                                    },
+                                    "required": ["to", "subject", "first_name", "last_name"]
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Email sent successfully",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "success": {
+                                                "type": "boolean"
+                                            },
+                                            "messageId": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "500": {
+                            "description": "Internal Server Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "success": {
+                                                "type": "boolean"
+                                            },
+                                            "message": {
+                                                "type": "string"
+                                            },
+                                            "error": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            // "/api/receive-email": {
+            //     post: {
+            //         "tags": ["Emails"],
+            //         "summary": "Receive an email",
+            //         "description": "Handles incoming emails from SendGrid Inbound Parse.",
+            //         "requestBody": {
+            //             "required": true,
+            //             "content": {
+            //                 "application/json": {
+            //                     "schema": {
+            //                         "type": "object",
+            //                         "properties": {
+            //                             "from": {
+            //                                 "type": "string",
+            //                                 "description": "The sender's email address"
+            //                             },
+            //                             "subject": {
+            //                                 "type": "string",
+            //                                 "description": "The subject of the email"
+            //                             },
+            //                             "text": {
+            //                                 "type": "string",
+            //                                 "description": "The body of the email"
+            //                             }
+            //                         }
+            //                     }
+            //                 }
+            //             }
+            //         },
+            //         "responses": {
+            //             "200": {
+            //                 "description": "Email received successfully",
+            //                 "content": {
+            //                     "text/plain": {
+            //                         "schema": {
+            //                             "type": "string"
+            //                         }
+            //                     }
+            //                 }
+            //             },
+            //             "500": {
+            //                 "description": "Internal Server Error",
+            //                 "content": {
+            //                     "application/json": {
+            //                         "schema": {
+            //                             "type": "object",
+            //                             "properties": {
+            //                                 "message": {
+            //                                     "type": "string"
+            //                                 }
+            //                             }
+            //                         }
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
         },
         components: {
             schemas: {
@@ -2039,6 +2912,11 @@ const options = {
                             "description": "User's date of birth",
                             "example": "1990-01-01",
                             "nullable": true
+                        },
+                        "role": {
+                            "type": "string",
+                            "description": "User's role type",
+                            "example": "USER",
                         },
                         "street": {
                             "type": "string",
@@ -2195,6 +3073,88 @@ const options = {
                         documents: {
                             type: 'string',
                             description: 'List of document URLs related to the event'
+                        }
+                    }
+                },
+                BookEventType: {
+                    "type": "object",
+                        "properties": {
+                        "id": {
+                            "type": "string",
+                                "description": "Unique identifier of the event to book"
+                        },
+                        "title": {
+                            "type": "string",
+                                "description": "Title of the event to book"
+                        },
+                        "description": {
+                            "type": "string",
+                                "description": "Description of the event to book"
+                        },
+                        "date": {
+                            "type": "string",
+                                "format": "date-time",
+                                    "description": "Date and time of the event to book"
+                        },
+                        "location": {
+                            "type": "string",
+                                "description": "Location where the event to book takes place"
+                        },
+                        "capacity": {
+                            "type": "number",
+                                "description": "Maximum number of participants"
+                        },
+                        "organizer_id": {
+                            "type": "number",
+                                "description": "ID of the event to book organizer"
+                        },
+                        "type": {
+                            "type": "string",
+                                "description": "Type or category of the event to book"
+                        },
+                        "registration_deadline": {
+                            "type": "string",
+                                "format": "date-time",
+                                    "description": "Deadline for event to book registration"
+                        },
+                        "registration_fee": {
+                            "type": "number",
+                                "format": "float",
+                                    "description": "Fee required for event to book registration"
+                        },
+                        "tags": {
+                            "type": "array",
+                                "items": {
+                                "type": "string"
+                            },
+                            "description": "Tags or keywords related to the event to book"
+                        },
+                        "rooms": {
+                            "type": "array",
+                                "items": {
+                                "type": "string",
+                                    "enum": [
+                                        "CAFE",
+                                        "MUSIC_STUDIO",
+                                        "PODCAST_ROOM",
+                                        "UPSTAIRS_BAR",
+                                        "STAGE_HALL",
+                                        "UPSTAIRS_BACK_ROOM"
+                                    ]
+                            },
+                            "description": "Rooms for the event to book"
+                        },
+                        "attendees_count": {
+                            "type": "number",
+                                "description": "Number of attendees registered for the event to book"
+                        },
+                        "thumbnail": {
+                            "type": "string",
+                                "description": "URL of the event to book thumbnail image"
+                        },
+                        "documents": {
+                            "type": "object",
+                            "description": "List of document URLs related to the event to book"
                         }
                     }
                 },

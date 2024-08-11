@@ -1,7 +1,7 @@
 import Router from "koa-router";
 import client from '../db';
 import { File, FileType } from "../types/file";
-import { User } from "../types/user";
+import { UserType } from "../types/user";
 
 const router = new Router();
 
@@ -32,7 +32,6 @@ const router = new Router();
  *                 enum:
  *                   - profile_picture
  *                   - event_thumbnail
- *                   - event_image
  *                   - cafe_item_thumbnail
  *                   - cafe_item_image
  *                   - hero_image
@@ -111,7 +110,7 @@ router.post('/api/file', async (ctx) => {
             [user_id, file_url, uploaded_at, type]
         );
 
-        let user: User | null = null;
+        let user: UserType | null = null;
         if (type === FileType.PROFILE_PICTURE) {
             await client.query(
                 'UPDATE users SET profile_picture = $1 WHERE id = ' + user_id,

@@ -1,7 +1,7 @@
 import { Context } from "koa";
 import Router from "koa-router";
 import client from '../db';
-import { User } from "../types/user";
+import { USER_ROLES, UserType } from "../types/user";
 import bcrypt from 'bcrypt';
 import isAuthenticated from "../middlewares/isAuthenticated";
 import jwt from 'jsonwebtoken';
@@ -105,7 +105,7 @@ router.get('/api/users', async (ctx: Context) => {
  */
 router.get('/api/user', async (ctx: Context) => {
     const queryParams = ctx.query;
-    const { id, first_name, last_name, username, email, phone_number, exact_match } = queryParams as Partial<User & { exact_match: 'true' | 'false' | undefined }>;
+    const { id, first_name, last_name, username, email, phone_number, exact_match } = queryParams as Partial<UserType & { exact_match: 'true' | 'false' | undefined }>;
 
     if (!id && !first_name && !last_name && !username && !email && !phone_number) {
         ctx.status = 400;
@@ -211,7 +211,6 @@ router.get('/api/user', async (ctx: Context) => {
  *               - last_name
  *               - username
  *               - email
- *               - phone_number
  *               - password
  *     responses:
  *       '201':
@@ -259,6 +258,9 @@ router.get('/api/user', async (ctx: Context) => {
  *                       type: string
  *                       format: date
  *                       description: User's date of birth
+ *                     role:
+ *                       type: string
+ *                       description: User role type
  *                     street:
  *                       type: string
  *                       description: User's street address
@@ -332,13 +334,13 @@ router.get('/api/user', async (ctx: Context) => {
  *                 - message
  */
 router.post('/api/user', async (ctx) => {
-    const { first_name, last_name, username, email, phone_number, password } = ctx.request.body as Partial<User>; 
-    if (!first_name || !last_name || !username || !email || !phone_number || !password) {
+    const { first_name, last_name, username, email, phone_number, password } = ctx.request.body as Partial<UserType>; 
+    if (!first_name || !last_name || !username || !email || !password) {
         ctx.status = 400;
         ctx.body = {
             code: 400,
             status: 'error',
-            message: 'First Name, Last Name, Username, Email, Phone Number, and Password are required'
+            message: 'First Name, Last Name, Username, Email, and Password are required'
         };
         return;
     }
@@ -348,8 +350,8 @@ router.post('/api/user', async (ctx) => {
         const password_hash = await bcrypt.hash(password, saltRounds);
 
         const result = await client.query(
-            'INSERT INTO users (first_name, last_name, username, email, phone_number, password_hash) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [first_name, last_name, username, email, phone_number, password_hash]
+            'INSERT INTO users (first_name, last_name, username, email, phone_number, password_hash, role) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [first_name, last_name, username, email, phone_number, password_hash, USER_ROLES.USER]
         );
         ctx.status = 201;
         ctx.body = {
@@ -415,6 +417,9 @@ router.post('/api/user', async (ctx) => {
  *                 type: string
  *                 format: date
  *                 description: User's date of birth
+ *               role:
+ *                 type: string
+ *                 description: User role type
  *               street:
  *                 type: string
  *                 description: User's street address
@@ -496,6 +501,9 @@ router.post('/api/user', async (ctx) => {
  *                       type: string
  *                       format: date
  *                       description: User's date of birth
+ *                     role:
+ *                       type: string
+ *                       description: User role type
  *                     street:
  *                       type: string
  *                       description: User's street address
@@ -541,7 +549,7 @@ router.post('/api/user', async (ctx) => {
  *         description: Internal Server Error
  */
 router.put('/api/user', isAuthenticated, async (ctx: Context) => {
-    const userUpdates = ctx.request.body as Partial<User>;
+    const userUpdates = ctx.request.body as Partial<UserType>;
     const { id, first_name, last_name, username, email, phone_number, password_hash, profile_picture, bio, date_of_birth, street, country, city, state, zipcode, twitter_profile, facebook_profile, instagram_profile, snapchat_profile, twitch_profile, youtube_profile } = userUpdates;
 
     if (!id) {
@@ -782,6 +790,9 @@ router.delete('/api/user/:id', isAuthenticated, async (ctx: Context) => {
  *                       type: string
  *                       format: 'date'
  *                       description: User's date of birth
+ *                     role:
+ *                       type: string
+ *                       description: User role type
  *                     street:
  *                       type: string
  *                       description: User's street address

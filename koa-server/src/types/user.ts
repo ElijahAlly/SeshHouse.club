@@ -1,10 +1,19 @@
-export interface User {
+export const USER_ROLES = {
+    USER: 'USER',
+    ADMIN: 'ADMIN',
+    SUPER_ADMIN: 'SUPER_ADMIN'
+}
+
+export type UserRoleType = (typeof USER_ROLES)[keyof typeof USER_ROLES];
+
+export interface UserType {
     id?: string;
     first_name: string;
     last_name: string;
     username: string;
     email: string;
     phone_number: string;
+    role: UserRoleType;
     password?: string;
     password_hash?: string;
     profile_picture?: string;

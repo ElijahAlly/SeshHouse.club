@@ -1,23 +1,23 @@
 import { Context } from "koa";
 import Router from "koa-router";
 import client from '../db';
-import { Event } from "../types/event";
+import { BookEventType } from "../types/event";
 import isAuthenticated from "../middlewares/isAuthenticated";
 
 const router = new Router();
 
-// * Get All Events
+// * Get All Events To Book
 /**
  * @swagger
- * /api/events:
+ * /api/events-to-book:
  *   get:
  *     tags:
- *       - Events
- *     summary: Retrieve a list of events
- *     description: Fetches a list of events from the database. This route requires authentication.
+ *       - EventsToBook
+ *     summary: Retrieve a list of events to book
+ *     description: Fetches a list of events to book from the database. This route requires authentication.
  *     responses:
  *       200:
- *         description: A list of events
+ *         description: A list of events to book
  *         content:
  *           application/json:
  *             schema:
@@ -44,8 +44,7 @@ const router = new Router();
  *                         type: string
  *                         description: Description of the event
  *                       date:
- *                         type: string
- *                         format: date-time
+ *                         type: object
  *                         description: Date and time of the event
  *                       location:
  *                         type: string
@@ -68,13 +67,21 @@ const router = new Router();
  *                         format: float
  *                         description: Fee required for event registration
  *                       tags:
- *                         type: string
+ *                         type: array
+ *                         items:
+ *                           type: string
  *                         description: Tags or keywords related to the event
- *                       status:
- *                         type: string
- *                         description: Current status of the event
  *                       rooms:
- *                         type: string
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                           enum: 
+ *                             - CAFE
+ *                             - MUSIC_STUDIO
+ *                             - PODCAST_ROOM
+ *                             - UPSTAIRS_BAR
+ *                             - STAGE_HALL
+ *                             - UPSTAIRS_BACK_ROOM
  *                         description: Rooms for the event
  *                       attendees_count:
  *                         type: number
@@ -83,10 +90,7 @@ const router = new Router();
  *                         type: string
  *                         description: URL of the event thumbnail image
  *                       documents:
- *                         type: array
- *                         items:
- *                           type: string
- *                           format: uri
+ *                         type: object
  *                         description: List of document URLs related to the event
  *       500:
  *         description: Internal Server Error
@@ -105,10 +109,9 @@ const router = new Router();
  *                   type: string
  *                   description: Error message
  */
-router.get('/api/events', async (ctx: Context) => {
+router.get('/api/events-to-book', async (ctx: Context) => {
     try {
-        const result = await client.query('SELECT * FROM events');
-        console.log(result.rows);
+        const result = await client.query('SELECT * FROM events_to_book');
         ctx.status = 200;
         ctx.body = {
             code: 200,
@@ -126,15 +129,16 @@ router.get('/api/events', async (ctx: Context) => {
     }
 });
 
-// * Get Event by field
+
+// * Get Event To Book by field
 /**
  * @swagger
- * /api/event:
+ * /api/event-to-book:
  *   get:
  *     tags:
- *       - Events
- *     summary: Retrieve a event by query parameters
- *     description: Retrieve event details based on query parameters. At least one query parameter is required.
+ *       - EventsToBook
+ *     summary: Retrieve an event to book by query parameters
+ *     description: Retrieve event to book details based on query parameters. At least one query parameter is required.
  *     parameters:
  *       - in: query
  *         name: id
@@ -152,18 +156,29 @@ router.get('/api/events', async (ctx: Context) => {
  *           type: string
  *         description: The event's associated tags
  *       - in: query
- *         name: status 
- *         schema:
- *           type: string
- *       - in: query
  *         name: rooms 
  *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum:
+ *               - CAFE
+ *               - MUSIC_STUDIO
+ *               - PODCAST_ROOM
+ *               - UPSTAIRS_BAR
+ *               - STAGE_HALL
+ *               - UPSTAIRS_BACK_ROOM
+ *         description: The event's associated rooms
+ *       - in: query
+ *         name: type 
+ *         schema:
  *           type: string
- *         description: The event's associated room
+ *         description: The event's associated type
  *       - in: query
  *         name: date
  *         schema:
  *           type: string
+ *           format: date
  *         description: The event's date
  *       - in: query
  *         name: exact_match
@@ -173,23 +188,21 @@ router.get('/api/events', async (ctx: Context) => {
  *         description: Whether to perform an exact match (true) or a partial match (false) on query parameters
  *     responses:
  *       200:
- *         description: A event object
+ *         description: An event to book object
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Event'
+ *               $ref: '#/components/schemas/BookEventType'
  *       400:
  *         description: Bad request. At least one query parameter is required
  *       500:
  *         description: Internal Server Error
  */
-router.get('/api/event', async (ctx: Context) => {
+router.get('/api/event-to-book', async (ctx: Context) => {
     const queryParams = ctx.query;
-    const { id, title, tags, exact_match, organizer_id, status } = queryParams as Partial<Event & { 
-        exact_match: 'true' | 'false' | undefined;
-    }>;
+    const { id, title, tags, exact_match, type, rooms } = queryParams as Partial<BookEventType & { exact_match: 'true' | 'false' | undefined }>;
 
-    if (!id && !title && !tags && !organizer_id && !status) {
+    if (!id && !title && !tags && !type && !rooms) {
         ctx.status = 400;
         ctx.body = {
             code: 400,
@@ -200,11 +213,11 @@ router.get('/api/event', async (ctx: Context) => {
     }
 
     try {
-        let query = 'SELECT * FROM events WHERE';
-        let values: (string | number)[] = [];
+        let query = 'SELECT * FROM events_to_book WHERE';
+        let values: (string | number | {rooms: string[]})[] = [];
         let queryParts: string[] = [];
 
-        const addQueryPart = (field: string, value: string | number, isString: boolean) => {
+        const addQueryPart = (field: string, value: string | number | {rooms: string[]}, isString: boolean) => {
             if (exact_match && exact_match === 'true') {
                 queryParts.push(`${field} = $${queryParts.length + 1}`);
                 values.push(value);
@@ -219,9 +232,9 @@ router.get('/api/event', async (ctx: Context) => {
 
         if (id) addQueryPart('id', id, false);
         if (title) addQueryPart('title', title, true);
-        if (tags) addQueryPart('tags', tags, true);
-        if (status) addQueryPart('status', status, true);
-        if (organizer_id) addQueryPart('organizer_id', organizer_id, false);
+        if (tags) addQueryPart('tags', JSON.stringify(tags), true);
+        if (type) addQueryPart('type', type, false);
+        if (rooms) addQueryPart('rooms', rooms, false);
 
         query += ' ' + queryParts.join(` ${exact_match && exact_match === 'true' ? 'AND' : 'OR'} `);
 
@@ -232,7 +245,7 @@ router.get('/api/event', async (ctx: Context) => {
             ctx.body = {
                 code: 200,
                 status: 'success',
-                message: 'Event not found',
+                message: 'Event to book not found',
                 data: []
             };
             return;
@@ -255,17 +268,16 @@ router.get('/api/event', async (ctx: Context) => {
     }
 });
 
-// * Create New Event
+
+// * Create New Event To Book
 /**
  * @swagger
- * /api/event:
+ * /api/event-to-book:
  *   post:
- *     security:
- *       - BearerAuth: []
  *     tags:
- *       - Events
- *     summary: Create a new event
- *     description: Creates a new event with the provided details.
+ *       - EventsToBook
+ *     summary: Create a new event to book
+ *     description: Creates a new event to book with the provided details.
  *     requestBody:
  *       required: true
  *       content:
@@ -279,52 +291,54 @@ router.get('/api/event', async (ctx: Context) => {
  *               description:
  *                 type: string
  *                 description: Description of the Event
- *               date:
- *                 type: string
+ *               dates:
+ *                 type: object 
  *                 description: Date of the Event 
  *               organizer_id:
  *                 type: number
- *                 description: User id who created the Event
+ *                 description: User ID who created the Event
  *               location:
  *                 type: string
- *                 description: Location of Event
+ *                 description: Location of the Event
  *               capacity:
  *                 type: number
- *                 description: Capacity of Event
+ *                 description: Capacity of the Event
  *               type:
  *                 type: string
  *                 description: Event type
  *               registration_deadline:
  *                 type: string
  *                 format: date-time
- *                 description: Deadline to register for Event
+ *                 description: Deadline to register for the Event to book
  *               registration_fee:
  *                 type: number
  *                 format: float
- *                 description: Fee to register for Event
+ *                 description: Fee to register for the Event to book
  *               tags:
- *                 type: string
- *                 description: Event tags (separated by `,`)
- *               status:
- *                 type: string
- *                 description: Event status
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Tags related to the Event to book (separated by `,`)
  *               rooms:
- *                 type: string
- *                 description: Event rooms
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: ['CAFE', 'MUSIC_STUDIO', 'PODCAST_ROOM', 'UPSTAIRS_BAR', 'STAGE_HALL', 'UPSTAIRS_BACK_ROOM']
+ *                 description: Rooms for the Event to book
  *               attendees_count:
  *                 type: number
- *                 description: Count of attendees currently registered for Event
+ *                 description: Count of attendees currently registered for the Event to book
  *               thumbnail:
  *                 type: string
- *                 description: Event thumbnail
+ *                 description: URL of the Event to book thumbnail
  *               documents:
- *                 type: string
- *                 description: Event documents
+ *                 type: object
+ *                 description: URLs of the Event to book documents
  *             required:
  *               - title
  *               - description
- *               - date
- *               - organizer_id
+ *               - rooms
+ *               - type
  *     responses:
  *       200:
  *         description: Created event
@@ -351,7 +365,7 @@ router.get('/api/event', async (ctx: Context) => {
  *                     description:
  *                       type: string
  *                       description: Description of the event
- *                     date:
+ *                     dates:
  *                       type: string
  *                       format: date-time
  *                       description: Date and time of the event
@@ -376,23 +390,27 @@ router.get('/api/event', async (ctx: Context) => {
  *                       format: float
  *                       description: Fee required for event registration
  *                     tags:
- *                       type: string
- *                       description: Tags or keywords related to the event
- *                     status:
- *                       type: string
- *                       description: Current status of the event
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Tags or keywords related to the event to book
  *                     rooms:
- *                       type: string
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                         enum: ['CAFE', 'MUSIC_STUDIO', 'PODCAST_ROOM', 'UPSTAIRS_BAR', 'STAGE_HALL', 'UPSTAIRS_BACK_ROOM']
  *                       description: Rooms for the event
  *                     attendees_count:
  *                       type: number
- *                       description: Number of attendees registered for the event
+ *                       description: Number of attendees registered for the event to book
  *                     thumbnail:
  *                       type: string
  *                       description: URL of the event thumbnail image
  *                     documents:
- *                       type: string
- *                       description: List of document URLs related to the event
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: List of document URLs related to the event to book
  *       '400':
  *         description: Bad request. Required fields are missing.
  *         content:
@@ -428,28 +446,24 @@ router.get('/api/event', async (ctx: Context) => {
  *                 - status
  *                 - message
  */
-router.post('/api/event', async (ctx) => {
-    const { title, description, dates, organizer_id, location, capacity, type, registration_deadline, registration_fee, tags, status, attendees_count, thumbnail, documents, rooms } = ctx.request.body as Partial<Event>;
-
-    // console.log(ctx.request.body);
-    if (!title || !description || !organizer_id) {
+router.post('/api/event-to-book', async (ctx) => {
+    const { title, description, dates, organizer_id, location, capacity, type, registration_deadline, registration_fee, tags, attendees_count, thumbnail, documents, rooms } = ctx.request.body as Partial<BookEventType>;
+    if (!title || !description || !rooms || !type) {
         ctx.status = 400;
         ctx.body = {
             code: 400,
             status: 'error',
-            message: 'Title, Description, and Organizer ID are required'
+            message: 'Title, Description, Type, and Rooms are required'
         };
         return;
     }
 
     try {
         const result = await client.query(
-            'INSERT INTO events (title, description, dates, location, capacity, organizer_id, type, registration_deadline, registration_fee, tags, status, attendees_count, thumbnail, documents, rooms) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *',
-            [title, description, dates, location, capacity, organizer_id, type, registration_deadline, registration_fee, tags, status, attendees_count, thumbnail, documents, rooms]
+            'INSERT INTO events_to_book (title, description, dates, location, capacity, organizer_id, type, registration_deadline, registration_fee, tags, attendees_count, thumbnail, documents, rooms) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *',
+            [title, description, dates, location, capacity, organizer_id, type, registration_deadline, registration_fee, tags, attendees_count, thumbnail, documents, {rooms}]
         );
 
-        // console.log(result)
-        // console.log(result.rows[0])
         ctx.status = 201;
         ctx.body = {
             code: 201,
@@ -467,15 +481,17 @@ router.post('/api/event', async (ctx) => {
     }
 });
 
-// * Update event (id is required)
+// * Update Event to book (id is required)
 /**
  * @swagger
- * /api/event:
+ * /api/event-to-book:
  *   put:
+ *     security:
+ *       - BearerAuth: []
  *     tags:
- *       - Events
- *     summary: Update an existing event
- *     description: Updates an existing event with the provided details. The event ID is required in the request body.
+ *       - EventsToBook
+ *     summary: Update an existing event to book
+ *     description: Updates an existing event to book with the provided details. The event to book ID is required in the request body.
  *     requestBody:
  *       required: true
  *       content:
@@ -516,11 +532,22 @@ router.post('/api/event', async (ctx) => {
  *                 format: float
  *                 description: Fee to register for the event
  *               tags:
- *                 type: string
+ *                 type: array
+ *                 items:
+ *                   type: string
  *                 description: Event tags (separated by `,`)
- *               status:
- *                 type: string
- *                 description: Event status
+ *               rooms:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum:
+ *                     - CAFE
+ *                     - MUSIC_STUDIO
+ *                     - PODCAST_ROOM
+ *                     - UPSTAIRS_BAR
+ *                     - STAGE_HALL
+ *                     - UPSTAIRS_BACK_ROOM
+ *                 description: Rooms for the event
  *               attendees_count:
  *                 type: number
  *                 description: Count of attendees currently registered for the event
@@ -586,11 +613,22 @@ router.post('/api/event', async (ctx) => {
  *                       format: float
  *                       description: Fee required for event registration
  *                     tags:
- *                       type: string
+ *                       type: array
+ *                       items:
+ *                         type: string
  *                       description: Tags or keywords related to the event
- *                     status:
- *                       type: string
- *                       description: Current status of the event
+ *                     rooms:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                         enum:
+ *                           - CAFE
+ *                           - MUSIC_STUDIO
+ *                           - PODCAST_ROOM
+ *                           - UPSTAIRS_BAR
+ *                           - STAGE_HALL
+ *                           - UPSTAIRS_BACK_ROOM
+ *                       description: Rooms for the event
  *                     attendees_count:
  *                       type: number
  *                       description: Number of attendees registered for the event
@@ -608,12 +646,11 @@ router.post('/api/event', async (ctx) => {
  *       500:
  *         description: Internal Server Error
  */
-router.put('/api/event', async (ctx) => {
+router.put('/api/event-to-book', isAuthenticated, async (ctx) => {
     const {
         id,
         title,
         description,
-        dates,
         location,
         capacity,
         organizer_id,
@@ -621,46 +658,43 @@ router.put('/api/event', async (ctx) => {
         registration_deadline,
         registration_fee,
         tags,
-        status,
+        rooms,
         attendees_count,
         thumbnail,
-        documents,
-        rooms
-    } = ctx.request.body as Partial<Event>;
+        documents
+    } = ctx.request.body as Partial<BookEventType>;
 
     if (!id) {
         ctx.status = 400;
         ctx.body = {
             code: 400,
             status: 'error',
-            message: 'Event ID is required'
+            message: 'Event to book ID is required'
         };
         return;
     }
 
     try {
-        let query = 'UPDATE events SET';
-        let values: (string | number | Date | { rooms: string[] })[] = [];
+        let query = 'UPDATE events_to_book SET';
+        let values: (string | number | Date | { rooms: string[]} )[] = [];
         let queryParts: string[] = [];
 
-        const addQueryPart = (field: string, value: string | number | Date | { rooms: string[] }) => {
+        const addQueryPart = (field: string, value: string | number | Date | { rooms: string[]}) => {
             queryParts.push(`${field} = $${queryParts.length + 1}`);
             values.push(value);
         };
 
         if (title) addQueryPart('title', title);
         if (description) addQueryPart('description', description);
-        if (dates) addQueryPart('date', JSON.stringify(dates));
         if (location) addQueryPart('location', location);
         if (capacity) addQueryPart('capacity', capacity);
         if (organizer_id) addQueryPart('organizer_id', organizer_id);
         if (type) addQueryPart('type', type);
         if (registration_deadline) addQueryPart('registration_deadline', registration_deadline);
         if (registration_fee) addQueryPart('registration_fee', registration_fee);
-        if (tags) addQueryPart('tags', tags);
-        if (status) addQueryPart('status', status);
-        if (attendees_count) addQueryPart('attendees_count', attendees_count);
+        if (tags) addQueryPart('tags', JSON.stringify(tags));
         if (rooms) addQueryPart('rooms', rooms);
+        if (attendees_count) addQueryPart('attendees_count', attendees_count);
         if (thumbnail) addQueryPart('thumbnail', thumbnail);
         if (documents) addQueryPart('documents', JSON.stringify(documents));
 
@@ -684,7 +718,7 @@ router.put('/api/event', async (ctx) => {
             ctx.body = {
                 code: 404,
                 status: 'error',
-                message: 'Event not found'
+                message: 'Event to book not found'
             };
             return;
         }
@@ -706,17 +740,18 @@ router.put('/api/event', async (ctx) => {
     }
 });
 
-// * Delete event by id
+
+// * Delete event to book by id
 /**
  * @swagger
- * /api/event/{id}:
+ * /api/event-to-book/{id}:
  *   delete:
  *     security:
  *       - BearerAuth: []
  *     tags:
- *       - Events
- *     summary: Delete an event
- *     description: Deletes an event by its ID.
+ *       - EventsToBook
+ *     summary: Delete an event to book
+ *     description: Deletes an event to book by its ID.
  *     parameters:
  *       - in: query
  *         name: id
@@ -743,18 +778,18 @@ router.put('/api/event', async (ctx) => {
  *       500:
  *         description: Internal Server Error
  */
-router.delete('/api/event/:id', isAuthenticated, async (ctx) => {
+router.delete('/api/event-to-book/:id', isAuthenticated, async (ctx) => {
     const { id } = ctx.params;
 
     try {
-        const result = await client.query('DELETE FROM events WHERE id = $1 RETURNING *', [id]);
+        const result = await client.query('DELETE FROM events_to_book WHERE id = $1 RETURNING *', [id]);
 
         if (result.rowCount === 0) {
             ctx.status = 404;
             ctx.body = {
                 code: 404,
                 status: 'error',
-                message: 'Event not found'
+                message: 'Event to book not found'
             };
             return;
         }
