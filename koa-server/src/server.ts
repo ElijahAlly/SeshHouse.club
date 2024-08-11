@@ -21,8 +21,14 @@ const app = new Koa();
 
 // Middleware
 app.keys = [process.env.SESSION_SECRET || `session-secret-you-WILL-NEVER_guess:)-${(Math.random() * 1000).toFixed(0)}`];
+
+app.use(cors({
+    origin: 'https://www.seshhouse.club', // Change to your production URL
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+}));
 app.use(bodyParser());
-app.use(cors());
 app.use(logger());
 
 const PORT = CONFIG.port;
