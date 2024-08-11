@@ -15,7 +15,7 @@ const HomeHero: FunctionComponent<HomeHeroProps> = () => {
         <header className="bg-gradient-to-r from-green-500 to-black text-white pb-28 pt-24 relative">
             <div className="container mx-auto text-center md:text-right px-9">
                 <h1 className="text-4xl font-bold mb-4">Discover and Book Amazing Events</h1>
-                <p className="text-lg mb-8">Find or Host your next event, workshop, and social gathering.</p>
+                <p className="text-lg mb-8">Find or Host your next event, workshop, or social gathering.</p>
                 <Button variant='outline' size="lg" onClick={() => router.push('/events')}>
                     Explore Events <ArrowRightIcon className="w-5 h-5 ml-2" />
                 </Button>

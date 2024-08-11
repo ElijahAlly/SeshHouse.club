@@ -15,7 +15,7 @@ const Footer: FunctionComponent<FooterProps> = ({ user }) => {
                     <div>
                         <h3 className="text-lg font-semibold">About Us</h3>
                         <p className="mt-4 text-gray-400">
-                            We are a passionate team dedicated to bringing you the best content and experiences.
+                            We are a passionate team dedicated to bringing you the best experiences.
                         </p>
                     </div>
                     <div>
@@ -53,7 +53,7 @@ const Footer: FunctionComponent<FooterProps> = ({ user }) => {
                     </div>
                 </div>
                 <div className="mt-8 border-t border-gray-800 pt-4 text-center text-sm text-gray-500">
-                    <p>&copy; 2024 Your Company. All rights reserved.</p>
+                    <p>&copy; 2024 SeshHouse. All rights reserved.</p>
                 </div>
             </div>
         </footer>
