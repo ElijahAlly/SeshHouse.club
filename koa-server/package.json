@@ -13,7 +13,10 @@
     "@koa/cors": "^5.0.0",
     "autoprefixer": "^10.4.19",
     "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "fs-extra": "^11.2.0",
     "jsonwebtoken": "^9.0.2",
     "koa": "^2.15.3",
@@ -30,11 +33,11 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-dist": "^5.17.14",
     "swagger-ui-koa": "^0.0.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.5.3"
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/express": "^4.17.21",
     "@types/fs-extra": "^11.0.4",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/koa": "^2.15.0",
@@ -45,13 +48,14 @@
     "@types/koa-session": "^6.4.5",
     "@types/koa-static": "^4.0.4",
     "@types/koa2-cors": "^2.0.5",
-    "@types/node": "^20.14.11",
+    "@types/node": "^20.14.15",
     "@types/nodemailer": "^6.4.15",
     "@types/pg": "^8.11.6",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-dist": "^3.30.5",
     "fast-glob": "^3.3.2",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.4"
   },
   "keywords": [],
   "author": "elijah ally",
