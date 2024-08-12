@@ -474,7 +474,7 @@ router.post('/api/event', async (ctx) => {
                         subject: title + ' was Successfully Created! For these dates: ' + dates?.selectedDates.map(date => new Date(date).toLocaleDateString()).join(', '),
                         first_name: userRes.first_name,
                         last_name: userRes.last_name,
-                        event_link: 'http://localhost:4000/events/' + `${encodeURI(title)}_${eventId}`,
+                        event_link: 'https://www.seshhouse.club/events/' + `${encodeURI(title)}_${eventId}`,
                     })
                 }))
                 .json()
