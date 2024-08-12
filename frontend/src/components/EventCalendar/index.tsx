@@ -10,7 +10,7 @@ import { IconLeft } from "react-day-picker";
 interface EventCalendarProps {
     user: UserType | null;
     events: Event[];
-    updateDatesSelected: (dates: Date[]) => void; 
+    updateDatesSelected: (dates: Date[] | undefined) => void; 
     dates: Date[];
 }
 
