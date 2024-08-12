@@ -3,9 +3,9 @@ import Router from "koa-router";
 
 const router = new Router();
 
-// router.get('/', async (ctx) => {
-//   ctx.redirect('/docs');
-// });
+router.get('/', async (ctx) => {
+  ctx.redirect('/docs');
+});
 
 // Serve Swagger JSON
 router.get('/swagger.json', async (ctx) => {
@@ -14,7 +14,7 @@ router.get('/swagger.json', async (ctx) => {
 });
 
 // Serve Swagger UI HTML
-router.get('/', async (ctx) => {
+router.get('/docs', async (ctx) => {
   ctx.type = 'html';
   ctx.body = `
     <!DOCTYPE html>

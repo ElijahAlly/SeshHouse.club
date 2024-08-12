@@ -3,6 +3,7 @@ export interface EmailRequestBody {
     subject: string;
     first_name: string;
     last_name: string;
+    event_link: string;
 }
 
 export interface EmailResponseBody {

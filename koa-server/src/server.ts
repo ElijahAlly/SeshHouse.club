@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+require('dotenv').config();
 import Koa from 'koa';
 import session from 'koa-session';
 import bodyParser from 'koa-bodyparser';
@@ -15,15 +15,13 @@ import fileRouter from './routes/file';
 import swaggerRouter from './routes/swagger';
 import emailRouter from './routes/email';
 
-dotenv.config();
-
 const app = new Koa();
 
 // Middleware
 app.keys = [process.env.SESSION_SECRET || `session-secret-you-WILL-NEVER_guess:)-${(Math.random() * 1000).toFixed(0)}`];
 
 app.use(cors({
-    origin: 'https://www.seshhouse.club', // Change to your production URL
+    origin: 'https://www.seshhouse.club',
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -33,7 +31,6 @@ app.use(logger());
 
 const PORT = CONFIG.port;
 app.use(session(CONFIG.SESSION_CONFIG, app));
-
 
 app.use(healthcheckRouter.routes());
 app.use(userRouter.routes()).use(userRouter.allowedMethods());
@@ -47,7 +44,7 @@ app.use(async (ctx) => {
 // TODO: Add blogs route
 app.use(
     koaSwagger({
-        routePrefix: '/',
+        routePrefix: '/docs',
         swaggerOptions: {
             url: '/swagger.json',
         },

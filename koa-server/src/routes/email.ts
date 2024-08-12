@@ -1,9 +1,9 @@
 import { Context } from "koa";
 import Router from "koa-router";
 import nodemailer from 'nodemailer';
-import { EmailRequestBody, EmailResponseBody } from "../types/email";
+import { EmailRequestBody } from "../types/email";
 import { AuthenticationTypeLogin } from "nodemailer/lib/smtp-connection";
-import { htmlTemplate } from "../templates/email";
+import { htmlTemplateEventCreated } from "../templates/email";
 
 const router = new Router();
 
@@ -72,15 +72,16 @@ const transporter = nodemailer.createTransport({
  *                   type: object
  */
 router.post('/api/send-email', async (ctx: Context) => {
-    const { to, subject, first_name, last_name } = ctx.request.body as EmailRequestBody;
+    const { to, subject, first_name, last_name, event_link } = ctx.request.body as EmailRequestBody;
 
     const mailOptions = {
         from: process.env.EMAIL,
         to,
         subject,
-        html: htmlTemplate({
+        html: htmlTemplateEventCreated({
             first_name, 
-            last_name 
+            last_name,
+            event_link
         }),
     };
 

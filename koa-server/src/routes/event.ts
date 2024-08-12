@@ -3,6 +3,7 @@ import Router from "koa-router";
 import client from '../db';
 import { Event } from "../types/event";
 import isAuthenticated from "../middlewares/isAuthenticated";
+import { UserType } from "../types/user";
 
 const router = new Router();
 
@@ -108,7 +109,6 @@ const router = new Router();
 router.get('/api/events', async (ctx: Context) => {
     try {
         const result = await client.query('SELECT * FROM events');
-        console.log(result.rows);
         ctx.status = 200;
         ctx.body = {
             code: 200,
@@ -449,14 +449,46 @@ router.post('/api/event', async (ctx) => {
             [title, description, dates, location, capacity, organizer_id, type, registration_deadline, registration_fee, tags, status, attendees_count, thumbnail, documents, rooms]
         );
 
-        // console.log(result)
-        // console.log(result.rows[0])
-        ctx.status = 201;
-        ctx.body = {
-            code: 201,
-            status: 'success',
-            data: result.rows[0]
-        };
+        const eventId = result.rows[0].id;
+
+        if (result?.rows[0]) {
+            const userRes: UserType | null = (await 
+                (await fetch(`http://localhost:3000/api/user?id=${organizer_id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }))
+                .json()
+            )?.data[0] || null;
+            // console.log('userRes', userRes);
+
+            const emailRes = userRes && (await
+                (await fetch('http://localhost:3000/api/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to: userRes.email,
+                        subject: title + ' was Successfully Created! For these dates: ' + dates?.selectedDates.map(date => new Date(date).toLocaleDateString()).join(', '),
+                        first_name: userRes.first_name,
+                        last_name: userRes.last_name,
+                        event_link: 'http://localhost:4000/events/' + `${encodeURI(title)}_${eventId}`,
+                    })
+                }))
+                .json()
+            );
+            // console.log(emailRes);
+
+            ctx.status = 201;
+            ctx.body = {
+                code: 201,
+                status: 'success',
+                data: result.rows[0],
+                emailStatus: !!(emailRes.success)
+            };
+        }
     } catch (err) {
         console.error(err);
         ctx.status = 500;
