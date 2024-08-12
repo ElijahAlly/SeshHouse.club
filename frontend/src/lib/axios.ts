@@ -11,7 +11,7 @@ const instance = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', params: strin
     const response = await fetch(BASE_URL + (params ? params : ''), {
         method,
         body: body ? JSON.stringify(body) : null,
-        credentials: 'omit',
+        credentials: 'include',
         headers
     });
 
