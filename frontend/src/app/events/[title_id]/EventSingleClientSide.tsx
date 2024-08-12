@@ -9,13 +9,14 @@ import React, { useEffect, useState } from 'react';
 
 const EventSingleClientSide: React.FC = () => {
     const pathname = usePathname();
+    const eventTitleAndIdArr = pathname.split('/')[2].split('_');
     const [event, setEvent] = useState<Event | null>(null);
     const [eventCreator, setEventCreator] = useState<UserType | null>(null);
 
     useEffect(() => {
         const getEvent = async () => {
             try {
-                const res = await instance('GET', `/event?title=${pathname.split('/')[2]}`);
+                const res = await instance('GET', `/event?id=${eventTitleAndIdArr[1]}`);
                 setEvent(res.data[0]);
             } catch (err) {
                 console.error('There was an error fetching the events!', err);

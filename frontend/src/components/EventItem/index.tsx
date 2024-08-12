@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Event, EVENT_STATUSES, EventStatusType, getFormattedStatusType } from '@/types/Event';
 import { formatDescription } from '@/util/text';
 import Image from 'next/image';
-import { ROUTE_PATHS } from '@/util/routes';
+import { getTitleToUrl, ROUTE_PATHS } from '@/util/routes';
 import { useRouter } from 'next/navigation';
 import { UserType } from '@/types/User';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -22,7 +22,7 @@ interface Props {
 
 const EventItem: React.FC<Props> = ({ event, user: currentUser, isOnAdminPage, isViewingOwnEvents, refreshEvents, isBooking = false }) => {
   const router = useRouter();
-  const eventUrl = encodeURI(ROUTE_PATHS.EVENTS.SINGlE.replace('{slug}', event.title));
+  const eventUrl = encodeURI(ROUTE_PATHS.EVENTS.SINGlE.replace('{slug}', `${getTitleToUrl(event.title)}_${event.id}`));
   // console.log('event on eventItem', event)
   // console.log('event single link', encodeURI(ROUTE_PATHS.EVENTS.SINGlE.replace('{slug}', event.title)))
   const [eventCreator, setEventCreator] = useState<UserType | null>(null);
@@ -78,6 +78,9 @@ const EventItem: React.FC<Props> = ({ event, user: currentUser, isOnAdminPage, i
         <>
           <div className='h-fit w-full p-3 flex justify-between'>
             <p className={`text-lg font-semibold ${event.status === EVENT_STATUSES.APPROVED ? 'text-green-500' : event.status === EVENT_STATUSES.PENDING ? 'text-yellow-500' : 'text-red-500'}`}>{getFormattedStatusType(event.status)}</p>
+            {(event.status === EVENT_STATUSES.DENIED || event.status === EVENT_STATUSES.PENDING) && (
+              <Button variant='link' className={`${event.status === EVENT_STATUSES.PENDING ? 'text-yellow-500' : 'text-red-500'} text-md`}>contact support</Button>
+            )}
           </div>
           <hr />
         </>

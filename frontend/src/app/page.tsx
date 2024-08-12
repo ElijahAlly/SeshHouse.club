@@ -1,16 +1,17 @@
 import HomeHero from '@/components/HomeHero';
 import { Card, CardContent } from '@/components/ui/card';
 import UpcomingEvents from '@/components/UpcomingEvents';
+import { DrawingPinFilledIcon, DrawingPinIcon } from '@radix-ui/react-icons';
 import React from 'react';
 
 const AppPage: React.FC = async () => {
   return (
     <div className='w-full h-fit py-3'>
       <HomeHero />
+      <h4 className="flex items-center text-2xl font-semibold mt-12 mb-2 mx-6">Find SeshHouse <DrawingPinFilledIcon className="w-5 h-5 mt-1 mx-1" /></h4>
       <Card className="max-w-sm m-6">
         <CardContent className='hover:shadow-lg'>
-          <h4 className="text-2xl font-semibold my-2">SeshHouse</h4>
-          <address className="not-italic text-gray-600">
+          <address className="not-italic text-gray-600 mt-6">
             <p className="mb-1">159 Midland Ave</p>
             <p className="mb-1">Kearny, NJ 07032</p>
             <p className="mb-1">United States</p>

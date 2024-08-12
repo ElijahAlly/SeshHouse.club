@@ -202,7 +202,7 @@ const EventCalendarClientSide: FunctionComponent<EventCalendarClientSideProps> =
                     </p>
                 </div>
             )}
-            <div className='w-2/5 flex justify-end m-6'>
+            <div className='w-2/5 flex justify-center md:justify-end m-6'>
                 <Button 
                     variant={!isCalendarValid ? 'disabled' : 'submit'}
                     onClick={() => router.push(path + '/your-info' + (user?.id ? '/confirm' : ''))} 

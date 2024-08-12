@@ -8,11 +8,14 @@ import { Event } from "@/types/Event";
 import instance from "@/lib/axios";
 import { formatDescription } from "@/util/text";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { getTitleToUrl, ROUTE_PATHS } from "@/util/routes";
 
 interface UpcomingEventsProps {
 }
 
 const UpcomingEvents: FunctionComponent<UpcomingEventsProps> = () => {
+    const router = useRouter();
     const [events, setEvents] = useState<Event[]>([]);
 
     const getEarliestDate = (event: Event) => {
@@ -62,7 +65,7 @@ const UpcomingEvents: FunctionComponent<UpcomingEventsProps> = () => {
                                 <DrawingPinIcon className="w-5 h-5" /> 
                                 <span>Kearny, NJ (SeshHouse)</span>
                             </div>
-                            <Button variant='default' size="sm" className="mt-4 w-full">
+                            <Button variant='outline' size="sm" className="mt-4 w-full hover:shadow-md" onClick={() => router.push(ROUTE_PATHS.EVENTS.SINGlE.replace('{slug}', `${getTitleToUrl(event.title)}_${event.id}`))}>
                                 Learn More
                             </Button>
                         </div>

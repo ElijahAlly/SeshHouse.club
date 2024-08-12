@@ -11,11 +11,11 @@ interface Props {
 const EventSingle: React.FC<Props> = ({ event, eventCreator }) => {
   return (
     <div
-      className='flex flex-col h-[180px] max-h-[180px] w-full mb-16 p-12'
+      className='flex flex-col h-[180px] max-h-[180px] w-full my-16 p-12'
     >
       <EventSingleBanner event={event} eventCreator={eventCreator}/>
       <div className='flex flex-col w-full px-16 mt-16'>
-        <h3 className='font-bold '>Description:</h3>
+        <h3 className='font-bold'>Description:</h3>
         <p className='min-w-fit max-w-[555px] p-16'>
           {event.description}
         </p>

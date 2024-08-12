@@ -11,6 +11,7 @@ import { UserType } from '@/types/User';
 import { usePathname, useRouter } from 'next/navigation';
 import { Checkbox } from '../ui/checkbox';
 import { useEventStore } from '@/stores/event';
+import { Button } from '../ui/button';
 
 interface Props {
     user: UserType | null;
@@ -38,8 +39,8 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
     const [section, setSection] = useState<'book' | 'view'>('book');
     const [filters, setFilters] = useState<Filters>({ eventType: undefined, eventStatus: undefined, eventRooms: [] });
 
-    const updateDatesSelected = (dates: Date[]) => {
-        setDates(dates);
+    const updateDatesSelected = (dates: Date[] | undefined) => {
+        dates ? setDates(dates) : setDates([]);
     }
 
     const filterEvents = () => {
@@ -114,7 +115,7 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
         getEvents();
     }
 
-    const noEventsOnDates = dates.filter(date => {
+    let noEventsOnDates = dates.filter(date => {
         const formattedDate = new Date(date).toISOString().split('T')[0];
 
         // Check if there is any event on the current date
@@ -126,6 +127,13 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
 
         // If no event found on this date, keep it in the noEventsOnDates list
         return !isEventOnDate;
+    });
+
+    noEventsOnDates.sort((dateA: Date, dateB: Date) => {
+        // Get the earliest date in each event's selectedDates array
+        const earliestDateA = new Date(dateA).getTime();
+        const earliestDateB = new Date(dateB).getTime();
+        return earliestDateA - earliestDateB;
     });
 
     const handleShowAllBookingsCheck = () => {
@@ -160,6 +168,35 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
         return filteredEventsByDateSelected;
     }
 
+    const getDateStr = (date: Date, i: number): string => {
+        const today = new Date();
+        const isToday: boolean = (
+            date.getDate() === today.getDate()
+            && date.getMonth() === today.getMonth()
+            && date.getFullYear() === today.getFullYear()
+        );
+
+        const tmrw = new Date();
+        tmrw.setDate(today.getDate() + 1);
+        const isTmrw: boolean = (
+            date.getDate() === tmrw.getDate()
+            && date.getMonth() === tmrw.getMonth()
+            && date.getFullYear() === tmrw.getFullYear()
+        );
+
+        if (isToday) {
+            return 'Today';
+        } else if (isTmrw) {
+            return 'Tomorrow';
+        } else {
+            return (i === 0 ? 'on ' : '') + date.toLocaleDateString();
+        }
+    }
+
+    const handleClearSelectedDates = () => {
+        updateDatesSelected([]);
+    }
+
     useEffect(() => {
         filterEvents();
     }, [dates, filters, events])
@@ -191,10 +228,11 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
             {(section === 'view' || isOnAdminPage) && (
                 <div className='flex flex-col h-fit w-full items-center pb-96'>
                     <h2 className="text-md md:text-xl m-6 text-center">Choose days to find {isOnAdminPage ? onlyCurrentUsersEvents ? 'your bookings' : 'bookings and review' : 'events'}.</h2>
-                    <EventCalendar 
-                        events={events} 
-                        user={user} 
-                        updateDatesSelected={updateDatesSelected} 
+                    <EventCalendar
+                        events={events}
+                        user={user}
+                        updateDatesSelected={updateDatesSelected}
+                        dates={dates}
                     />
                     {/* <Filters 
                         type={'events'} 
@@ -203,12 +241,22 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
                         shouldShowStatuses={isOnAdminPage && !onlyCurrentUsersEvents} 
                     /> */}
                         {/* <div className='flex flex-col items-center'> */}
-                    <div className='flex items-center border rounded-md p-3 cursor-pointer hover:shadow-md' onClick={handleShowAllBookingsCheck}>
-                        <Checkbox
-                            className='mr-3'
-                            checked={showAllBookings}
-                        />
-                        <p>Show All Bookings</p>
+                    <div className='w-4/5 flex flex-wrap justify-start md:justify-center'>
+                        <Button 
+                            className='my-3 mr-9'
+                            variant={dates.length === 0 ? 'disabled' : 'destructive'}
+                            disabled={dates.length === 0}
+                            onClick={handleClearSelectedDates}
+                        >
+                            Clear All Selected Dates
+                        </Button>
+                        <div className='flex items-center border rounded-md p-3 cursor-pointer hover:shadow-md' onClick={handleShowAllBookingsCheck}>
+                            <Checkbox
+                                className='mr-3'
+                                checked={showAllBookings}
+                            />
+                            <p>Show All {onlyCurrentUsersEvents ? 'Bookings' : 'Events'}</p>
+                        </div>
                     </div>
                             {/* <p className='text-sm font-light mt-2 mb-6'>Overrides active filters, but does not remove them</p>
                         </div> */}
@@ -228,14 +276,14 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
                                 <h2>
                                     {dates.length > 0 ? (
                                         `${onlyCurrentUsersEvents 
-                                            ? 'You do not have any' 
-                                            : 'There are no'} events on ${noEventsOnDates.map((date) =>  ' ' + date.toLocaleDateString()).join(', ')} 
+                                            ? 'You do not have any'
+                                            : 'There are no'} events ${noEventsOnDates.map((date, i) =>  ' ' + getDateStr(date, i)).join(', ')} 
                                             ${isFiltersActive 
                                                 ? 'with your filters. Try removing some filters to get more results.' 
                                                 : ''
                                             } ${isOnAdminPage && !onlyCurrentUsersEvents ? 'to review' : ''}`
                                     ) : (
-                                        showAllBookings ? '' : 'Select dates to view events'
+                                        showAllBookings ? '' : `Select dates to view ${onlyCurrentUsersEvents ? 'your bookings' : isOnAdminPage ? 'pending bookings and review' : 'upcoming events'}`
                                     )}
                                 </h2>
                                 <p onClick={() => pathname.startsWith('/events') ? setSection('book') : router.push('/events')} className='text-green-500 hover:text-green-600 underline text-sm cursor-pointer mt-3'>Go book an event</p>

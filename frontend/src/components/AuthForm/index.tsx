@@ -172,8 +172,7 @@ const AuthForm: React.FC<Props> = ({ page, showSideCards, isOnEventCreationPage 
                 ...values, 
                 date_of_birth: values.date_of_birth.toISOString().split('T')[0] 
             });
-            console.log(signUpRes);
-            loginUserOnFrontend(signUpRes.data)
+            loginUserOnFrontend(signUpRes)
         } catch (err: any) {
             console.error(err)
         }
@@ -182,7 +181,7 @@ const AuthForm: React.FC<Props> = ({ page, showSideCards, isOnEventCreationPage 
     const handleLogin = async (values: z.infer<typeof loginFormSchema>) => {
         try {
             const loginRes = await instance('POST', '/login', values);
-            loginUserOnFrontend(loginRes.data);
+            loginUserOnFrontend(loginRes);
         } catch (err: any) {
             console.error(err)
         }
@@ -441,7 +440,7 @@ const AuthForm: React.FC<Props> = ({ page, showSideCards, isOnEventCreationPage 
     };
 
     return (
-        <div className={`relative flex overflow-hidden ${isOnEventCreationPage ? 'mt-2' : 'mt-16'} w-4/5 h-fit rounded-md border`}>
+        <div className={`relative flex overflow-hidden ${isOnEventCreationPage ? 'mt-2' : 'mt-24'} w-4/5 h-fit rounded-md border`}>
             {getLoginSection()}
             {getSignupSection()}
             {showSideCards && <div

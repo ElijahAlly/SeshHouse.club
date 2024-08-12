@@ -120,7 +120,15 @@ const EventsToBook: FunctionComponent<EventsToBookProps> = () => {
 
     return (
         <div className='flex flex-col w-full items-center'>
-            {!showCreateEventToBookForm && <Button variant={'outline'} className='w-fit px-6 my-3' onClick={() => setShowCreateEventToBookForm(true)}>Create New Event For People To Book</Button>}
+            {!showCreateEventToBookForm && (
+                <Button 
+                    variant={'outline'} 
+                    className='w-fit px-6 my-3 select-none' 
+                    onClick={() => setShowCreateEventToBookForm(true)}
+                >
+                    Create New Event For Users To Book
+                </Button>
+            )}
             {showCreateEventToBookForm && (
                 <div className='w-full border rounded-md p-3 my-3'>
                     <Button variant={'outline'} onClick={() => setShowCreateEventToBookForm(false)} className='text-yellow-500 border-yellow-500 hover:border-yellow-600 my-3 hover:text-yellow-600'>Cancel</Button>
@@ -238,6 +246,10 @@ const EventsToBook: FunctionComponent<EventsToBookProps> = () => {
                     </Form>
                 </div>
             )}
+            <div className='flex flex-col w-full mt-12'>
+                <h2 className='text-2xl font-semibold'>Current Events Users Can Book</h2>
+                <hr />
+            </div>
             <ul className='h-fit w-full flex flex-col p-2 pb-52'>
                 <div className='flex flex-col w-full h-fit pt-9 px-3'>
                     {eventsToBook.map((event: BookEventType, i: number) => (

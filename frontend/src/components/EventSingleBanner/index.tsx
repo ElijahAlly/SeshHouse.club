@@ -1,5 +1,5 @@
 import React from 'react';
-import { Event } from '@/types/Event';
+import { Event, EVENT_STATUSES, getFormattedStatusType } from '@/types/Event';
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { UserType } from '@/types/User';
@@ -18,6 +18,14 @@ const EventSingleBanner: React.FC<Props> = ({ event, eventCreator }) => {
         height={100}
         width={100}
       /> */}
+      {event.status !== EVENT_STATUSES.APPROVED && (
+        <>
+          <div className='h-fit w-full flex justify-between'>
+            <p className={`text-lg font-semibold ${event.status === EVENT_STATUSES.PENDING ? 'text-yellow-500' : 'text-red-500'}`}>{getFormattedStatusType(event.status)}</p>
+          </div>
+          <hr className='mb-3'/>
+        </>
+      )}
       <div className='flex flex-col justify-between'>
         <div className='flex flex-col'>
           <div className='flex justify-between'>

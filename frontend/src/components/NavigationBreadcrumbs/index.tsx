@@ -1,4 +1,4 @@
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FunctionComponent } from "react";
 import Link from "next/link";
 import { getUrlToDisplay, pathShouldNotHaveLink } from "@/util/routes";
@@ -14,7 +14,7 @@ const NavigationBreadcrumbs: FunctionComponent<NavigationBreadcrumbsProps> = () 
     }
 
     return (
-        <div className="h-4 flex w-full px-8 mt-4 flex-wrap">
+        <div className="h-8 flex w-full px-8 flex-wrap items-center">
             {paths.map((path, index) => {
                 const isNotLink = pathShouldNotHaveLink(path) || path === 'your-info';
                 // Construct the href for each breadcrumb link
