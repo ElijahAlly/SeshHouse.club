@@ -12,6 +12,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Checkbox } from '../ui/checkbox';
 import { useEventStore } from '@/stores/event';
 import { Button } from '../ui/button';
+import PaginationContainer from '../PaginationContainer';
 
 interface Props {
     user: UserType | null;
@@ -261,16 +262,18 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
                             {/* <p className='text-sm font-light mt-2 mb-6'>Overrides active filters, but does not remove them</p>
                         </div> */}
                     <ul className='h-fit w-full flex flex-col px-3 md:px-12'>
-                        {(showAllBookings ? events : filteredEvents).map(event => (
-                            <EventItem 
-                                key={event.id} 
-                                event={event} 
-                                user={user} 
-                                isOnAdminPage={isOnAdminPage} 
-                                isViewingOwnEvents={!!onlyCurrentUsersEvents} 
-                                refreshEvents={refreshEvents}
-                            />
-                        ))}
+                        <PaginationContainer maxItemsPerPage={4}>
+                            {(showAllBookings ? events : filteredEvents).map(event => (
+                                <EventItem 
+                                    key={event.id} 
+                                    event={event} 
+                                    user={user} 
+                                    isOnAdminPage={isOnAdminPage} 
+                                    isViewingOwnEvents={!!onlyCurrentUsersEvents} 
+                                    refreshEvents={refreshEvents}
+                                />
+                            ))}
+                        </PaginationContainer>
                         {(noEventsOnDates.length > 0 || filteredEvents.length === 0) && (
                             <div className='h-fit w-full flex flex-col border rounded-md my-3 py-6 px-3'>
                                 <h2>
@@ -295,26 +298,30 @@ const Events: React.FC<Props> = ({ user, isOnAdminPage, onlyCurrentUsersEvents, 
             {section === 'book' && !isOnAdminPage && !isBooking && (
                 <ul className='h-fit w-full flex flex-col p-2 pb-52'>
                     <div className='flex flex-col w-full h-fit pt-9 px-3'>
-                        {eventsToBook.map((event: BookEventType, i: number) => (
-                            <BookEventItem key={i} event={event}/>
-                        ))}
+                        <PaginationContainer maxItemsPerPage={6}>
+                            {eventsToBook.map((event: BookEventType, i: number) => (
+                                <BookEventItem key={i} event={event}/>
+                            ))}
+                        </PaginationContainer>
                     </div>
                 </ul>
             )}
             {isBooking && (
                 <ul className='h-fit flex flex-col p-2 w-full md:w-3/4'>
                     <div className='flex flex-col w-full h-fit px-3'>
-                        {getEventsMatchingSelectedDates().map((event: Event, i: number) => (
-                            <EventItem 
-                                key={i} 
-                                event={event} 
-                                user={user} 
-                                isOnAdminPage={isOnAdminPage} 
-                                isViewingOwnEvents={!!onlyCurrentUsersEvents} 
-                                refreshEvents={refreshEvents}
-                                isBooking={isBooking}
-                            />
-                        ))}
+                        <PaginationContainer maxItemsPerPage={6}>
+                            {getEventsMatchingSelectedDates().map((event: Event, i: number) => (
+                                <EventItem 
+                                    key={i} 
+                                    event={event} 
+                                    user={user} 
+                                    isOnAdminPage={isOnAdminPage} 
+                                    isViewingOwnEvents={!!onlyCurrentUsersEvents} 
+                                    refreshEvents={refreshEvents}
+                                    isBooking={isBooking}
+                                />
+                            ))}
+                        </PaginationContainer>
                     </div>
                 </ul>
             )}

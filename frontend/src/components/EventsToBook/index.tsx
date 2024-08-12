@@ -13,6 +13,7 @@ import { Input } from "../ui/input";
 import { Checkbox } from "../ui/checkbox";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { useRouter } from "next/navigation";
+import PaginationContainer from "../PaginationContainer";
 
 interface EventsToBookProps {
 }
@@ -252,9 +253,11 @@ const EventsToBook: FunctionComponent<EventsToBookProps> = () => {
             </div>
             <ul className='h-fit w-full flex flex-col p-2 pb-52'>
                 <div className='flex flex-col w-full h-fit pt-9 px-3'>
-                    {eventsToBook.map((event: BookEventType, i: number) => (
-                        <BookEventItem key={i} event={event}/>
-                    ))}
+                    <PaginationContainer maxItemsPerPage={4}>
+                        {eventsToBook.map((event: BookEventType, i: number) => (
+                            <BookEventItem key={i} event={event}/>
+                        ))}
+                    </PaginationContainer>
                 </div>
             </ul>
         </div>
