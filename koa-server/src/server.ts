@@ -24,7 +24,7 @@ app.use(cors({
     origin: 'https://www.seshhouse.club',
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowHeaders: ['Content-Type', 'Authorization'],
-    credentials: false,
+    credentials: true,
 }));
 app.use(bodyParser());
 app.use(logger());
