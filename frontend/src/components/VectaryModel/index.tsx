@@ -2,12 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 
-declare global {
-  interface Window {
-    VctrApi: any;
-  }
-}
-
 const VectaryModel = () => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const MODEL_SCENE_ID = '5NrXRkHXwN604YRIThj8Zl';
