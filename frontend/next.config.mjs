@@ -5,10 +5,6 @@ const withVanillaExtract = createVanillaExtractPlugin()
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: [
-            'sesh-house-koa-server-production.up.railway.app',
-            'external-content.duckduckgo.com',
-            'utfs.io'],
         remotePatterns: [
             {
                 protocol: 'https',
@@ -25,6 +21,11 @@ const nextConfig = {
                 protocol: "https",
                 hostname: "utfs.io",
                 pathname: `/a/${process.env.UPLOADTHING_APP_ID}/*`,
+            },
+            {
+                protocol: "https",
+                hostname: "www.vectary.com",
+                pathname: '/studio-lite/scripts/**',
             },
         ],
     },

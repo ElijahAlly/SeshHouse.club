@@ -1,8 +1,13 @@
+import dynamic from "next/dynamic";
 import HomeHero from '@/components/HomeHero';
 import { Card, CardContent } from '@/components/ui/card';
 import UpcomingEvents from '@/components/UpcomingEvents';
 import { DrawingPinFilledIcon, DrawingPinIcon } from '@radix-ui/react-icons';
 import React from 'react';
+
+const VectaryModel = dynamic(() => import("../components/VectaryModel/index"), {
+  ssr: false, // Ensure this component renders only on the client
+});
 
 const AppPage: React.FC = async () => {
   return (
@@ -24,6 +29,7 @@ const AppPage: React.FC = async () => {
           </a>
         </CardContent>
       </Card>
+      <VectaryModel />
       <UpcomingEvents />
     </div>
   )
