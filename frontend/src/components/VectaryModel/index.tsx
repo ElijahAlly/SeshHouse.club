@@ -1,12 +1,18 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react";
+import { FunctionComponent, useEffect, useRef, useState } from "react";
 
-const VectaryModel = () => {
+interface VectaryModelProps {
+    pos: 0 | 1;
+    index: 0 | 1;
+}
+
+const VectaryModel: FunctionComponent<VectaryModelProps> = ({ index, pos }) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const MODEL_SCENE_ID = '5NrXRkHXwN604YRIThj8Zl';
     const MODEL_URL = `https://app.vectary.com/p/${MODEL_SCENE_ID}`;
-    const [opacity, setOpacity] = useState<number>(0);
+    const [opacity, setOpacity] = useState<0 | 1>(0);
+    const [topLvlOpacity, setTopLvlOpacity] = useState<0 | 1>(0);
 
     const startOpacityIncrease = () => {
         setTimeout(() => {
@@ -20,9 +26,16 @@ const VectaryModel = () => {
         }
     }, [iframeRef.current]);
 
+    useEffect(() => {
+        setTopLvlOpacity(index === pos ? 1 : 0);
+    }, [pos]);
+
     return (
         <div 
-            className="relative flex items-center justify-center px-6 w-full h-fit" 
+            className="relative flex items-center justify-center px-6 w-full h-fit transition-opacity duration-700 ease-in-out"
+            style={{
+                opacity: `${topLvlOpacity}`,
+            }}
         >
             {/* Transparent overlay to prevent interactions except on floating UI */}
             <div 
@@ -38,11 +51,11 @@ const VectaryModel = () => {
                 onTouchMove={(e) => e.preventDefault()}
                 onTouchStart={(e) => e.preventDefault()}
             />
-            <iframe 
+            <iframe
                 ref={iframeRef}
                 id="vectary_model"
                 src={`${MODEL_URL}?zoom=0&rotation=0&pan=0&autorotate=0&allowCameraControl=false&enableApi=false&controls=0&orbit=0`} 
-                height={480}
+                height={index === 0 ? 390 : 480}
                 width="100%"
                 allow="xr-spatial-tracking; fullscreen;"
                 style={{
