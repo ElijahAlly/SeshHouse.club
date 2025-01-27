@@ -32,7 +32,7 @@ const VectaryModel: FunctionComponent<VectaryModelProps> = ({ index, pos }) => {
 
     return (
         <div
-            className="relative flex items-center justify-center mx-6 w-[90%] h-fit transition-opacity duration-700 ease-in-out bg-black rounded-md"
+            className={`relative flex items-center justify-center h-fit transition-opacity duration-700 ease-in-out ${pos === 0 ? 'px-6 w-full' : 'mx-6 w-[90%] bg-black rounded-md'}`}
             style={{
                 opacity: `${topLvlOpacity}`,
             }}
