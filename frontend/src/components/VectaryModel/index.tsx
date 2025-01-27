@@ -55,7 +55,7 @@ const VectaryModel: FunctionComponent<VectaryModelProps> = ({ index, pos }) => {
                 ref={iframeRef}
                 id="vectary_model"
                 src={`${MODEL_URL}?zoom=0&rotation=0&pan=0&autorotate=0&allowCameraControl=false&enableApi=false&controls=0&orbit=0`} 
-                height={index === 0 ? 390 : 450}
+                height={index === 0 ? 390 : 420}
                 width="100%"
                 allow="xr-spatial-tracking; fullscreen;"
                 style={{
